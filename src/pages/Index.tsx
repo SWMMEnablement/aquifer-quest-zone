@@ -3,32 +3,50 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ModulesSection from "@/components/ModulesSection";
 import CNCalculator from "@/components/CNCalculator";
+import GroundwaterSimulator from "@/components/GroundwaterSimulator";
+import MuskingumSimulator from "@/components/MuskingumSimulator";
 import Footer from "@/components/Footer";
 
-const Index = () => {
-  const [showCNCalculator, setShowCNCalculator] = useState(false);
+type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing";
 
-  const openCNCalculator = () => {
-    setShowCNCalculator(true);
+const Index = () => {
+  const [activeModule, setActiveModule] = useState<ActiveModule>(null);
+
+  const openModule = (moduleId: string) => {
+    setActiveModule(moduleId as ActiveModule);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const closeCNCalculator = () => {
-    setShowCNCalculator(false);
+  const closeModule = () => {
+    setActiveModule(null);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Header isCalculatorOpen={showCNCalculator} />
+      <Header isCalculatorOpen={activeModule !== null} />
 
-      {showCNCalculator ? (
+      {activeModule === "cn-calculator" && (
         <div className="pt-16">
-          <CNCalculator onClose={closeCNCalculator} />
+          <CNCalculator onClose={closeModule} />
         </div>
-      ) : (
+      )}
+
+      {activeModule === "groundwater" && (
+        <div className="pt-16">
+          <GroundwaterSimulator onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === "muskingum-routing" && (
+        <div className="pt-16">
+          <MuskingumSimulator onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === null && (
         <>
           <Hero />
-          <ModulesSection onOpenCNCalculator={openCNCalculator} />
+          <ModulesSection onOpenModule={openModule} />
           <Footer />
         </>
       )}

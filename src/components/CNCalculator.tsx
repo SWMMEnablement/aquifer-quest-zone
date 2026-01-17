@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Info, AlertTriangle, TrendingUp } from "lucide-react";
+import { ArrowLeft, Info, AlertTriangle, TrendingUp, GitCompare } from "lucide-react";
+import CNMethodComparison from "./CNMethodComparison";
 import {
   LineChart,
   Line,
@@ -78,6 +79,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const [amc, setAmc] = useState(2);
   const [rainfall, setRainfall] = useState([4]);
   const [showLimitations, setShowLimitations] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
 
   // Calculate CN and runoff
   const calculations = useMemo(() => {
@@ -273,7 +275,28 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                 </ul>
               </div>
             )}
+
+            {/* Method comparison toggle */}
+            <Button
+              variant={showComparison ? "default" : "outline"}
+              className="w-full mt-4"
+              onClick={() => setShowComparison(!showComparison)}
+            >
+              <GitCompare className="w-4 h-4 mr-2" />
+              {showComparison ? "Hide" : "Compare"} Methods
+            </Button>
           </Card>
+
+          {/* Method Comparison Panel - conditionally rendered */}
+          {showComparison && (
+            <CNMethodComparison
+              rainfall={rainfall[0]}
+              soilType={soilType}
+              landUse={landUse}
+              scsCN={calculations.adjustedCN}
+              scsRunoff={calculations.runoff}
+            />
+          )}
 
           {/* Results Panel */}
           <Card className="p-6 shadow-card">
