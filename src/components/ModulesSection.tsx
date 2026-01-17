@@ -9,7 +9,7 @@ import {
 import ModuleCard from "./ModuleCard";
 
 interface ModulesSectionProps {
-  onOpenCNCalculator: () => void;
+  onOpenModule: (moduleId: string) => void;
 }
 
 const modules = [
@@ -17,7 +17,7 @@ const modules = [
     id: "cn-calculator",
     title: "Curve Number Calculator",
     description:
-      "Interactive SCS Runoff Curve Number method with sensitivity analysis and AMC variations.",
+      "Interactive SCS Runoff Curve Number method with sensitivity analysis, AMC variations, and method comparison.",
     icon: Calculator,
     color: "blue" as const,
     status: "available" as const,
@@ -26,10 +26,10 @@ const modules = [
     id: "muskingum-routing",
     title: "Muskingum-Cunge Routing",
     description:
-      "Visualize flood wave propagation and attenuation through channel reaches.",
+      "Visualize flood wave propagation and attenuation through channel reaches with animated simulation.",
     icon: Waves,
     color: "teal" as const,
-    status: "coming-soon" as const,
+    status: "available" as const,
   },
   {
     id: "groundwater",
@@ -38,7 +38,7 @@ const modules = [
       "Balance pumping rates with ecosystem health in this aquifer management game.",
     icon: Droplet,
     color: "blue" as const,
-    status: "coming-soon" as const,
+    status: "available" as const,
   },
   {
     id: "channel-design",
@@ -69,13 +69,7 @@ const modules = [
   },
 ];
 
-const ModulesSection = ({ onOpenCNCalculator }: ModulesSectionProps) => {
-  const handleModuleClick = (moduleId: string) => {
-    if (moduleId === "cn-calculator") {
-      onOpenCNCalculator();
-    }
-  };
-
+const ModulesSection = ({ onOpenModule }: ModulesSectionProps) => {
   return (
     <section id="modules" className="py-24 bg-background">
       <div className="container px-6">
@@ -97,7 +91,7 @@ const ModulesSection = ({ onOpenCNCalculator }: ModulesSectionProps) => {
               key={module.id}
               {...module}
               delay={0.1 + index * 0.1}
-              onClick={() => handleModuleClick(module.id)}
+              onClick={() => onOpenModule(module.id)}
             />
           ))}
         </div>
