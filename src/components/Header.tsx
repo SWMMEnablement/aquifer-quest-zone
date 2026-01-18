@@ -1,12 +1,13 @@
-import { Droplets, ExternalLink, Menu, X } from "lucide-react";
+import { Droplets, ExternalLink, Menu, X, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface HeaderProps {
   isCalculatorOpen: boolean;
+  onOpenDocs?: () => void;
 }
 
-const Header = ({ isCalculatorOpen }: HeaderProps) => {
+const Header = ({ isCalculatorOpen, onOpenDocs }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -33,7 +34,6 @@ const Header = ({ isCalculatorOpen }: HeaderProps) => {
             </span>
           </a>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <a
               href="#modules"
@@ -45,6 +45,17 @@ const Header = ({ isCalculatorOpen }: HeaderProps) => {
             >
               Modules
             </a>
+            <button
+              onClick={onOpenDocs}
+              className={`text-sm font-medium transition-colors inline-flex items-center gap-1 ${
+                isCalculatorOpen
+                  ? "text-muted-foreground hover:text-primary"
+                  : "text-water-foam/80 hover:text-water-foam"
+              }`}
+            >
+              <BookOpen className="w-3 h-3" />
+              Docs
+            </button>
             <a
               href="https://ponce.sdsu.edu/"
               target="_blank"
@@ -98,6 +109,20 @@ const Header = ({ isCalculatorOpen }: HeaderProps) => {
               >
                 Modules
               </a>
+              <button
+                onClick={() => {
+                  onOpenDocs?.();
+                  setMobileMenuOpen(false);
+                }}
+                className={`text-sm font-medium py-2 inline-flex items-center gap-1 ${
+                  isCalculatorOpen
+                    ? "text-muted-foreground"
+                    : "text-water-foam/80"
+                }`}
+              >
+                <BookOpen className="w-3 h-3" />
+                Docs
+              </button>
               <a
                 href="https://ponce.sdsu.edu/"
                 target="_blank"
