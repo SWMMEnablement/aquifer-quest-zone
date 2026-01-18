@@ -5,9 +5,10 @@ import ModulesSection from "@/components/ModulesSection";
 import CNCalculator from "@/components/CNCalculator";
 import GroundwaterSimulator from "@/components/GroundwaterSimulator";
 import MuskingumSimulator from "@/components/MuskingumSimulator";
+import Documentation from "@/components/Documentation";
 import Footer from "@/components/Footer";
 
-type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing";
+type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" | "documentation";
 
 const Index = () => {
   const [activeModule, setActiveModule] = useState<ActiveModule>(null);
@@ -21,9 +22,14 @@ const Index = () => {
     setActiveModule(null);
   };
 
+  const openDocs = () => {
+    setActiveModule("documentation");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <Header isCalculatorOpen={activeModule !== null} />
+      <Header isCalculatorOpen={activeModule !== null} onOpenDocs={openDocs} />
 
       {activeModule === "cn-calculator" && (
         <div className="pt-16">
@@ -40,6 +46,12 @@ const Index = () => {
       {activeModule === "muskingum-routing" && (
         <div className="pt-16">
           <MuskingumSimulator onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === "documentation" && (
+        <div className="pt-16">
+          <Documentation onClose={closeModule} />
         </div>
       )}
 
