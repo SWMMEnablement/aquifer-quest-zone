@@ -47,7 +47,7 @@ const modules = [
       "Design non-eroding, non-silting channels based on flow and sediment load.",
     icon: Mountain,
     color: "amber" as const,
-    status: "coming-soon" as const,
+    status: "available" as const,
   },
   {
     id: "albedo",
