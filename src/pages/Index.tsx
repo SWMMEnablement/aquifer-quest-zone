@@ -5,10 +5,11 @@ import ModulesSection from "@/components/ModulesSection";
 import CNCalculator from "@/components/CNCalculator";
 import GroundwaterSimulator from "@/components/GroundwaterSimulator";
 import MuskingumSimulator from "@/components/MuskingumSimulator";
+import StableChannelWizard from "@/components/StableChannelWizard";
 import Documentation from "@/components/Documentation";
 import Footer from "@/components/Footer";
 
-type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" | "documentation";
+type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" | "channel-design" | "documentation";
 
 const Index = () => {
   const [activeModule, setActiveModule] = useState<ActiveModule>(null);
@@ -46,6 +47,12 @@ const Index = () => {
       {activeModule === "muskingum-routing" && (
         <div className="pt-16">
           <MuskingumSimulator onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === "channel-design" && (
+        <div className="pt-16">
+          <StableChannelWizard onClose={closeModule} />
         </div>
       )}
 
