@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import GettingStarted from "@/components/GettingStarted";
 import ModulesSection from "@/components/ModulesSection";
 import CNCalculator from "@/components/CNCalculator";
 import GroundwaterSimulator from "@/components/GroundwaterSimulator";
@@ -79,6 +80,7 @@ const Index = () => {
       {activeModule === null && (
         <>
           <Hero />
+          <GettingStarted onOpenModule={openModule} />
           <ModulesSection onOpenModule={openModule} />
           <Footer />
         </>
