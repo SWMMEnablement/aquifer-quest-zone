@@ -6,10 +6,12 @@ import CNCalculator from "@/components/CNCalculator";
 import GroundwaterSimulator from "@/components/GroundwaterSimulator";
 import MuskingumSimulator from "@/components/MuskingumSimulator";
 import StableChannelWizard from "@/components/StableChannelWizard";
+import AlbedoWaterBalance from "@/components/AlbedoWaterBalance";
+import HydroEcologicalTracker from "@/components/HydroEcologicalTracker";
 import Documentation from "@/components/Documentation";
 import Footer from "@/components/Footer";
 
-type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" | "channel-design" | "documentation";
+type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" | "channel-design" | "albedo" | "hydroecology" | "documentation";
 
 const Index = () => {
   const [activeModule, setActiveModule] = useState<ActiveModule>(null);
@@ -53,6 +55,18 @@ const Index = () => {
       {activeModule === "channel-design" && (
         <div className="pt-16">
           <StableChannelWizard onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === "albedo" && (
+        <div className="pt-16">
+          <AlbedoWaterBalance onClose={closeModule} />
+        </div>
+      )}
+
+      {activeModule === "hydroecology" && (
+        <div className="pt-16">
+          <HydroEcologicalTracker onClose={closeModule} />
         </div>
       )}
 

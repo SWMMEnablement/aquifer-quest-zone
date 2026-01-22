@@ -56,7 +56,7 @@ const modules = [
       "Explore how land surface changes affect local water resources through energy balance.",
     icon: Sun,
     color: "amber" as const,
-    status: "coming-soon" as const,
+    status: "available" as const,
   },
   {
     id: "hydroecology",
@@ -65,7 +65,7 @@ const modules = [
       "Link water management decisions to ecosystem impacts in an interactive watershed.",
     icon: TreePine,
     color: "green" as const,
-    status: "coming-soon" as const,
+    status: "available" as const,
   },
 ];
 
