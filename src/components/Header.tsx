@@ -1,6 +1,6 @@
-import { Droplets, ExternalLink, Menu, X, BookOpen } from "lucide-react";
+import { Droplets, ExternalLink, Menu, X, BookOpen, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   isCalculatorOpen: boolean;
@@ -9,6 +9,36 @@ interface HeaderProps {
 
 const Header = ({ isCalculatorOpen, onOpenDocs }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setIsDark(true);
+    } else if (savedTheme === "light") {
+      setIsDark(false);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setIsDark(true);
+    }
+  }, []);
+
+  const toggleTheme = () => setIsDark(!isDark);
 
   return (
     <header
@@ -69,6 +99,23 @@ const Header = ({ isCalculatorOpen, onOpenDocs }: HeaderProps) => {
               Original Source
               <ExternalLink className="w-3 h-3" />
             </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className={`transition-all duration-300 ${
+                isCalculatorOpen
+                  ? "text-muted-foreground hover:text-primary"
+                  : "text-water-foam/80 hover:text-water-foam"
+              }`}
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <Sun className="h-4 w-4 transition-transform duration-300" />
+              ) : (
+                <Moon className="h-4 w-4 transition-transform duration-300" />
+              )}
+            </Button>
           </nav>
 
           {/* Mobile menu button */}
@@ -122,6 +169,17 @@ const Header = ({ isCalculatorOpen, onOpenDocs }: HeaderProps) => {
               >
                 <BookOpen className="w-3 h-3" />
                 Docs
+              </button>
+              <button
+                onClick={toggleTheme}
+                className={`text-sm font-medium py-2 inline-flex items-center gap-2 ${
+                  isCalculatorOpen
+                    ? "text-muted-foreground"
+                    : "text-water-foam/80"
+                }`}
+              >
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDark ? "Light Mode" : "Dark Mode"}
               </button>
               <a
                 href="https://ponce.sdsu.edu/"
