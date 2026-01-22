@@ -1,4 +1,4 @@
-import { X, BookOpen, Calculator, Droplets, Waves, FileText, ExternalLink } from "lucide-react";
+import { X, BookOpen, Calculator, Droplets, Waves, FileText, ExternalLink, Mountain, Sun, TreePine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,31 +28,52 @@ const Documentation = ({ onClose }: DocumentationProps) => {
         </div>
 
         <Tabs defaultValue="cn-calculator" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto gap-2 bg-transparent p-0">
+          <TabsList className="flex flex-wrap w-full h-auto gap-2 bg-transparent p-0 justify-start">
             <TabsTrigger 
               value="cn-calculator" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-3"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
             >
               <Calculator className="h-4 w-4" />
               CN Calculator
             </TabsTrigger>
             <TabsTrigger 
               value="groundwater" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-3"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
             >
               <Droplets className="h-4 w-4" />
               Groundwater
             </TabsTrigger>
             <TabsTrigger 
               value="muskingum" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-3"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
             >
               <Waves className="h-4 w-4" />
               Muskingum-Cunge
             </TabsTrigger>
             <TabsTrigger 
+              value="channel-design" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
+            >
+              <Mountain className="h-4 w-4" />
+              Channel Design
+            </TabsTrigger>
+            <TabsTrigger 
+              value="albedo" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
+            >
+              <Sun className="h-4 w-4" />
+              Albedo & Energy
+            </TabsTrigger>
+            <TabsTrigger 
+              value="hydroecology" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
+            >
+              <TreePine className="h-4 w-4" />
+              Hydro-Ecology
+            </TabsTrigger>
+            <TabsTrigger 
               value="references" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-3"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center gap-2 py-2 px-3"
             >
               <FileText className="h-4 w-4" />
               References
@@ -330,6 +351,335 @@ const Documentation = ({ onClose }: DocumentationProps) => {
                         </CardContent>
                       </Card>
                     </div>
+                  </section>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Stable Channel Design Documentation */}
+            <TabsContent value="channel-design" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mountain className="h-5 w-5 text-earth-amber" />
+                    Stable Channel Design
+                    <Badge variant="secondary">Available</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Overview</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      The Stable Channel Design Wizard helps engineers design channels that neither erode 
+                      nor deposit sediment under design flow conditions. It uses regime theory (Lacey equations) 
+                      and sediment transport principles (Shields criterion) to determine stable geometries.
+                    </p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Key Equations</h3>
+                    <div className="space-y-4 bg-muted/50 p-4 rounded-lg font-mono text-sm">
+                      <div>
+                        <p className="text-muted-foreground mb-1">Lacey Width (Regime Theory):</p>
+                        <p className="text-foreground">P = 4.75 × √Q</p>
+                        <p className="text-xs text-muted-foreground mt-1">P = wetted perimeter (m), Q = discharge (m³/s)</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Lacey Depth:</p>
+                        <p className="text-foreground">R = 0.47 × (Q / f)^(1/3)</p>
+                        <p className="text-xs text-muted-foreground mt-1">R = hydraulic radius (m), f = silt factor</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Manning's Velocity:</p>
+                        <p className="text-foreground">V = (1/n) × R^(2/3) × S^(1/2)</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Shields Criterion:</p>
+                        <p className="text-foreground">τ* = τ / ((ρs - ρ) × g × d)</p>
+                        <p className="text-xs text-muted-foreground mt-1">Critical τ* ≈ 0.047 for incipient motion</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Cross-Section Types</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Trapezoidal</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Most common for constructed channels. Side slopes typically 1.5:1 to 3:1 
+                          depending on soil stability.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Parabolic</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Natural channel form. Provides uniform shear stress distribution 
+                          along the perimeter.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Rectangular</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Used where space is limited or when using rigid linings 
+                          (concrete, masonry).
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Triangular</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Efficient for small flows. Common in roadside ditches 
+                          and grassed waterways.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Stability Analysis</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                        <div className="w-3 h-3 rounded-full bg-green-500 mt-1.5" />
+                        <div>
+                          <h4 className="font-medium text-green-600">Stable (τ/τc {"<"} 0.8)</h4>
+                          <p className="text-sm text-muted-foreground">No significant erosion expected; channel maintains geometry</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500 mt-1.5" />
+                        <div>
+                          <h4 className="font-medium text-yellow-600">Marginal (0.8 {"<"} τ/τc {"<"} 1.2)</h4>
+                          <p className="text-sm text-muted-foreground">Near threshold; consider protection or redesign</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                        <div className="w-3 h-3 rounded-full bg-red-500 mt-1.5" />
+                        <div>
+                          <h4 className="font-medium text-red-600">Unstable (τ/τc {">"} 1.2)</h4>
+                          <p className="text-sm text-muted-foreground">Active erosion; requires lining, flattening, or flow reduction</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Albedo & Water Balance Documentation */}
+            <TabsContent value="albedo" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sun className="h-5 w-5 text-amber-500" />
+                    Albedo & Water Balance
+                    <Badge variant="secondary">Available</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Overview</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      This visualizer demonstrates how land cover changes affect the surface energy balance 
+                      and, consequently, local water resources. Albedo (surface reflectivity) determines 
+                      how much solar energy is absorbed versus reflected, driving evapotranspiration rates 
+                      and local temperature.
+                    </p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Energy Balance Equation</h3>
+                    <div className="bg-muted/50 p-4 rounded-lg font-mono text-sm">
+                      <p className="text-foreground">Rn = G + H + LE</p>
+                      <div className="mt-3 text-muted-foreground space-y-1">
+                        <p>Rn = Net radiation (incoming - outgoing)</p>
+                        <p>G = Ground heat flux (soil heating/cooling)</p>
+                        <p>H = Sensible heat flux (air heating)</p>
+                        <p>LE = Latent heat flux (evapotranspiration)</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Key Concepts</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Albedo</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Fraction of incoming solar radiation reflected. Ranges from ~0.08 (water) 
+                          to ~0.80 (fresh snow). Higher albedo = less energy absorbed.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Bowen Ratio (H/LE)</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ratio of sensible to latent heat. Vegetated areas have low Bowen ratios 
+                          (more evaporation); deserts have high ratios (more heating).
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Albedo by Land Cover</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2">Surface</th>
+                            <th className="text-left py-2">Albedo</th>
+                            <th className="text-left py-2">Effect</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-muted-foreground">
+                          <tr className="border-b border-border/50">
+                            <td className="py-2">Fresh Snow</td>
+                            <td>0.80-0.90</td>
+                            <td>High reflection, cooling</td>
+                          </tr>
+                          <tr className="border-b border-border/50">
+                            <td className="py-2">Desert Sand</td>
+                            <td>0.30-0.40</td>
+                            <td>High surface heating</td>
+                          </tr>
+                          <tr className="border-b border-border/50">
+                            <td className="py-2">Grassland</td>
+                            <td>0.18-0.25</td>
+                            <td>Moderate ET</td>
+                          </tr>
+                          <tr className="border-b border-border/50">
+                            <td className="py-2">Dense Forest</td>
+                            <td>0.10-0.15</td>
+                            <td>High absorption, high ET</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2">Open Water</td>
+                            <td>0.06-0.10</td>
+                            <td>Maximum absorption, evaporation</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Land-Atmosphere Feedbacks</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Deforestation increases albedo but reduces evapotranspiration, often leading to 
+                      reduced local precipitation and increased surface temperatures. This feedback 
+                      loop can accelerate desertification in vulnerable regions.
+                    </p>
+                  </section>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Hydro-Ecological Tracker Documentation */}
+            <TabsContent value="hydroecology" className="space-y-6 mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TreePine className="h-5 w-5 text-earth-green" />
+                    Hydro-Ecological Impact Tracker
+                    <Badge variant="secondary">Available</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Overview</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      This interactive watershed model demonstrates how land use decisions and water 
+                      management (diversions, pumping) cascade through the ecosystem. It tracks impacts 
+                      on fish populations, bird habitats, riparian vegetation, and water quality.
+                    </p>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Watershed Water Balance</h3>
+                    <div className="bg-muted/50 p-4 rounded-lg font-mono text-sm">
+                      <p className="text-foreground">P = ET + Q + ΔS</p>
+                      <div className="mt-3 text-muted-foreground space-y-1">
+                        <p>P = Precipitation</p>
+                        <p>ET = Evapotranspiration</p>
+                        <p>Q = Streamflow (runoff + baseflow)</p>
+                        <p>ΔS = Change in storage</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Land Use Impacts</h3>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-earth-green" />
+                          Forest & Wetlands
+                        </h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          High infiltration, sustained baseflow, excellent habitat, natural water filtration.
+                        </p>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-earth-amber" />
+                          Agriculture
+                        </h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Moderate infiltration, increased nutrient loads, reduced habitat connectivity.
+                        </p>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-muted-foreground" />
+                          Urban/Industrial
+                        </h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          High runoff, flashy hydrograph, pollution loads, fragmented habitats.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Ecosystem Indicators</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Environmental Flows</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Minimum streamflow requirements to maintain aquatic ecosystem health. 
+                          Typically 60-80% of natural flow regime.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Habitat Connectivity</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Continuous corridors allowing species movement, migration, and genetic exchange. 
+                          Fragmentation is a primary threat.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Water Quality Index</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Composite measure of dissolved oxygen, nutrients, sediment, temperature, 
+                          and contaminants affecting aquatic life.
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <h4 className="font-medium mb-2">Riparian Health</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Condition of streamside vegetation providing shade, bank stability, 
+                          organic matter, and wildlife habitat.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Management Implications</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Sustainable water management requires balancing human needs with ecosystem requirements. 
+                      Excessive diversions or land use change can trigger cascade effects: reduced baseflow → 
+                      elevated temperatures → fish kills → loss of piscivorous birds → altered food web.
+                    </p>
                   </section>
                 </CardContent>
               </Card>
