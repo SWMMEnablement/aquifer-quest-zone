@@ -270,7 +270,7 @@ const ManningRatingCurve = ({ onClose }: Props) => {
                 )}
                 <Tooltip formatter={(v: number) => v.toFixed(3)} />
                 <ReferenceLine y={currentDepth} stroke="hsl(var(--destructive))" strokeDasharray="5 5" label={{ value: `y=${currentDepth}`, fill: "hsl(var(--destructive))", fontSize: 10 }} />
-                {parseFloat(current.yc) > 0 && <ReferenceLine y={parseFloat(current.yc)} stroke="hsl(var(--accent))" strokeDasharray="3 3" label={{ value: "yc", fill: "hsl(var(--accent))", fontSize: 10 }} />}
+                {Number(current.yc) > 0 && <ReferenceLine y={Number(current.yc)} stroke="hsl(var(--accent))" strokeDasharray="3 3" label={{ value: "yc", fill: "hsl(var(--accent))", fontSize: 10 }} />}
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
