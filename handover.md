@@ -139,34 +139,41 @@ src/
 ## 4. Routing & Navigation
 
 ### URL Routes (React Router)
-The app uses React Router but has minimal routing:
+The app uses React Router with URL-based module routing for deep-linking:
 
 | Route | Component | Description |
 |-------|-----------|-------------|
-| `/` | `Index` | Main application page |
+| `/` | `Index` | Landing page (Hero, GettingStarted, ModulesSection, Footer) |
+| `/modules/:moduleId` | `ModulePage` | Dynamic module renderer |
 | `*` | `NotFound` | 404 catch-all |
 
-### Module Navigation (In-Page State)
-Modules are **not** URL-routed. Instead, `Index.tsx` manages an `activeModule` state variable:
+### Supported Module IDs
+| URL Path | Module Component |
+|----------|-----------------|
+| `/modules/cn-calculator` | `CNCalculator` |
+| `/modules/groundwater` | `GroundwaterSimulator` |
+| `/modules/muskingum-routing` | `MuskingumSimulator` |
+| `/modules/channel-design` | `StableChannelWizard` |
+| `/modules/albedo` | `AlbedoWaterBalance` |
+| `/modules/hydroecology` | `HydroEcologicalTracker` |
+| `/modules/documentation` | `Documentation` |
 
-```typescript
-type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" 
-                        | "channel-design" | "albedo" | "hydroecology" | "documentation";
-```
+### ModulePage (`src/pages/ModulePage.tsx`)
+- Reads `:moduleId` from URL params via `useParams()`
+- Looks up the component from a `moduleComponents` record mapping IDs to React components
+- If the module ID is invalid, renders a "Module Not Found" page with a link back to home
+- Close/back button navigates to `/` via `useNavigate()`
+- Docs link navigates to `/modules/documentation`
 
-- **`null`** → Landing page (Hero + GettingStarted + ModulesSection + Footer)
-- **Any module ID** → That module component is rendered, landing page is hidden
-
-**Flow:**
-1. User clicks a module card → `openModule(moduleId)` sets `activeModule` and scrolls to top
-2. Module component renders with `pt-16` padding (to clear the fixed header)
-3. Each module has a back/close button → calls `onClose()` → `setActiveModule(null)`
+### Index Page Navigation
+- `Index.tsx` uses `useNavigate()` to navigate to `/modules/:moduleId` when a module card is clicked
+- No in-page state management for module switching — fully URL-driven
 
 ### Header Behavior
 - `Header` receives `isCalculatorOpen` boolean (true when any module is active)
 - When on landing page: transparent background, white text (over hero gradient)
 - When module is open: solid background with blur, standard foreground text
-- "Docs" button calls `onOpenDocs()` → opens Documentation module
+- "Docs" button calls `onOpenDocs()` → navigates to `/modules/documentation`
 
 ---
 
