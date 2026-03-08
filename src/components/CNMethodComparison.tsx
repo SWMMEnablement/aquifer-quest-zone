@@ -11,6 +11,11 @@ import {
   Legend,
   Cell,
 } from "recharts";
+import {
+  calculateGreenAmpt,
+  calculatePhilip,
+  calculateHorton,
+} from "@/lib/hydrology/cn-method";
 
 interface CNMethodComparisonProps {
   rainfall: number;
@@ -19,88 +24,6 @@ interface CNMethodComparisonProps {
   scsCN: number;
   scsRunoff: number;
 }
-
-// Infiltration calculation methods
-const calculateGreenAmpt = (rainfall: number, soilType: string): { runoff: number; infiltration: number; description: string } => {
-  // Green-Ampt parameters by soil type
-  const params: Record<string, { K: number; psi: number; theta: number }> = {
-    A: { K: 11.78, psi: 4.95, theta: 0.417 }, // Sandy loam
-    B: { K: 1.09, psi: 8.89, theta: 0.434 },  // Loam
-    C: { K: 0.34, psi: 20.88, theta: 0.476 }, // Clay loam
-    D: { K: 0.03, psi: 31.63, theta: 0.475 }, // Clay
-  };
-  
-  const p = params[soilType] || params.B;
-  const rainIntensity = rainfall / 2; // assume 2-hour storm (in/hr)
-  
-  // Simplified Green-Ampt: F = K*t + psi*theta*ln(1 + F/(psi*theta))
-  // Iterative solution approximation
-  let cumInfiltration = 0;
-  const dt = 0.1; // 6 min intervals
-  const totalTime = 2; // hours
-  
-  for (let t = 0; t < totalTime; t += dt) {
-    const potentialRate = p.K * (1 + (p.psi * p.theta) / (cumInfiltration + 0.001));
-    const actualRate = Math.min(rainIntensity, potentialRate);
-    cumInfiltration += actualRate * dt;
-  }
-  
-  const runoff = Math.max(0, rainfall - cumInfiltration);
-  
-  return {
-    runoff: Math.round(runoff * 100) / 100,
-    infiltration: Math.round(cumInfiltration * 100) / 100,
-    description: "Physics-based infiltration using soil hydraulic properties (K, ψ, θ)"
-  };
-};
-
-const calculatePhilip = (rainfall: number, soilType: string): { runoff: number; infiltration: number; description: string } => {
-  // Philip's infiltration equation parameters
-  const params: Record<string, { S: number; A: number }> = {
-    A: { S: 6.0, A: 3.0 },   // High sorptivity sandy soil
-    B: { S: 4.0, A: 1.5 },   // Medium loam
-    C: { S: 2.0, A: 0.5 },   // Low infiltration clay loam
-    D: { S: 0.5, A: 0.1 },   // Very low infiltration clay
-  };
-  
-  const p = params[soilType] || params.B;
-  const t = 2; // 2-hour storm
-  
-  // Philip equation: f(t) = 0.5*S*t^(-0.5) + A
-  // Cumulative: F(t) = S*t^0.5 + A*t
-  const cumInfiltration = p.S * Math.sqrt(t) + p.A * t;
-  const runoff = Math.max(0, rainfall - cumInfiltration);
-  
-  return {
-    runoff: Math.round(runoff * 100) / 100,
-    infiltration: Math.round(Math.min(rainfall, cumInfiltration) * 100) / 100,
-    description: "Two-term algebraic equation (sorptivity + steady-state rate)"
-  };
-};
-
-const calculateHorton = (rainfall: number, soilType: string): { runoff: number; infiltration: number; description: string } => {
-  // Horton equation parameters
-  const params: Record<string, { f0: number; fc: number; k: number }> = {
-    A: { f0: 5.0, fc: 1.5, k: 2.0 },   // High initial, high final
-    B: { f0: 3.0, fc: 0.8, k: 2.5 },   // Medium
-    C: { f0: 1.5, fc: 0.3, k: 3.0 },   // Low
-    D: { f0: 0.5, fc: 0.05, k: 4.0 },  // Very low
-  };
-  
-  const p = params[soilType] || params.B;
-  const t = 2; // 2-hour storm
-  
-  // Horton: f(t) = fc + (f0 - fc) * e^(-kt)
-  // Cumulative: F(t) = fc*t + (f0 - fc)/k * (1 - e^(-kt))
-  const cumInfiltration = p.fc * t + (p.f0 - p.fc) / p.k * (1 - Math.exp(-p.k * t));
-  const runoff = Math.max(0, rainfall - cumInfiltration);
-  
-  return {
-    runoff: Math.round(runoff * 100) / 100,
-    infiltration: Math.round(Math.min(rainfall, cumInfiltration) * 100) / 100,
-    description: "Exponential decay from initial to final infiltration rate"
-  };
-};
 
 const CNMethodComparison = ({ rainfall, soilType, landUse, scsCN, scsRunoff }: CNMethodComparisonProps) => {
   const comparisons = useMemo(() => {

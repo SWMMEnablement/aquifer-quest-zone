@@ -22,56 +22,18 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import {
+  LAND_USE_LABELS,
+  SOIL_DESCRIPTIONS,
+  AMC_LABELS,
+  computeCNResults,
+  computeSensitivityData,
+  computeRainfallRunoffCurve,
+} from "@/lib/hydrology/cn-method";
 
 interface CNCalculatorProps {
   onClose: () => void;
 }
-
-// Curve Number lookup table (simplified)
-const cnTable: Record<string, Record<string, number>> = {
-  "open-space-good": { A: 39, B: 61, C: 74, D: 80 },
-  "open-space-fair": { A: 49, B: 69, C: 79, D: 84 },
-  "open-space-poor": { A: 68, B: 79, C: 86, D: 89 },
-  residential: { A: 61, B: 75, C: 83, D: 87 },
-  commercial: { A: 89, B: 92, C: 94, D: 95 },
-  industrial: { A: 81, B: 88, C: 91, D: 93 },
-  agricultural: { A: 67, B: 78, C: 85, D: 89 },
-  forest: { A: 30, B: 55, C: 70, D: 77 },
-  meadow: { A: 30, B: 58, C: 71, D: 78 },
-  paved: { A: 98, B: 98, C: 98, D: 98 },
-};
-
-const landUseLabels: Record<string, string> = {
-  "open-space-good": "Open Space (Good Condition)",
-  "open-space-fair": "Open Space (Fair Condition)",
-  "open-space-poor": "Open Space (Poor Condition)",
-  residential: "Residential (1/4 acre lots)",
-  commercial: "Commercial/Business",
-  industrial: "Industrial",
-  agricultural: "Agricultural (Row Crops)",
-  forest: "Forest (Good Cover)",
-  meadow: "Meadow",
-  paved: "Paved/Impervious",
-};
-
-const soilDescriptions: Record<string, string> = {
-  A: "Low runoff potential, high infiltration (sand, loamy sand)",
-  B: "Moderate infiltration (silt loam, loam)",
-  C: "Slow infiltration (sandy clay loam)",
-  D: "High runoff potential, very slow infiltration (clay)",
-};
-
-// AMC adjustment factors
-const adjustCNForAMC = (cn: number, amc: number): number => {
-  if (amc === 1) {
-    // Dry conditions - AMC I
-    return (4.2 * cn) / (10 - 0.058 * cn);
-  } else if (amc === 3) {
-    // Wet conditions - AMC III
-    return (23 * cn) / (10 + 0.13 * cn);
-  }
-  return cn; // AMC II - normal
-};
 
 const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const [landUse, setLandUse] = useState("residential");
@@ -81,73 +43,20 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const [showLimitations, setShowLimitations] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
-  // Calculate CN and runoff
-  const calculations = useMemo(() => {
-    const baseCN = cnTable[landUse]?.[soilType] || 75;
-    const adjustedCN = adjustCNForAMC(baseCN, amc);
-    const P = rainfall[0]; // inches
+  const calculations = useMemo(
+    () => computeCNResults(landUse, soilType, amc, rainfall[0]),
+    [landUse, soilType, amc, rainfall]
+  );
 
-    // SCS Runoff Equation: Q = (P - Ia)² / (P - Ia + S)
-    // where S = (1000/CN) - 10 and Ia = 0.2S (initial abstraction)
-    const S = 1000 / adjustedCN - 10;
-    const Ia = 0.2 * S;
-    const runoff = P > Ia ? Math.pow(P - Ia, 2) / (P - Ia + S) : 0;
-    const infiltration = P - runoff;
-    const runoffPercent = (runoff / P) * 100;
+  const sensitivityData = useMemo(
+    () => computeSensitivityData(landUse, soilType, amc, rainfall[0]),
+    [landUse, soilType, amc, rainfall]
+  );
 
-    return {
-      baseCN: Math.round(baseCN),
-      adjustedCN: Math.round(adjustedCN * 10) / 10,
-      S: Math.round(S * 100) / 100,
-      Ia: Math.round(Ia * 100) / 100,
-      runoff: Math.round(runoff * 100) / 100,
-      infiltration: Math.round(infiltration * 100) / 100,
-      runoffPercent: Math.round(runoffPercent),
-    };
-  }, [landUse, soilType, amc, rainfall]);
-
-  // Generate sensitivity data
-  const sensitivityData = useMemo(() => {
-    const baseCN = cnTable[landUse]?.[soilType] || 75;
-    const P = rainfall[0];
-    const data = [];
-
-    for (let cnDelta = -15; cnDelta <= 15; cnDelta += 3) {
-      const cn = Math.max(30, Math.min(98, baseCN + cnDelta));
-      const adjustedCN = adjustCNForAMC(cn, amc);
-      const S = 1000 / adjustedCN - 10;
-      const Ia = 0.2 * S;
-      const runoff = P > Ia ? Math.pow(P - Ia, 2) / (P - Ia + S) : 0;
-
-      data.push({
-        cn: Math.round(adjustedCN),
-        runoff: Math.round(runoff * 100) / 100,
-        isCurrent: cnDelta === 0,
-      });
-    }
-    return data;
-  }, [landUse, soilType, amc, rainfall]);
-
-  // Generate rainfall-runoff curve
-  const rainfallRunoffData = useMemo(() => {
-    const baseCN = cnTable[landUse]?.[soilType] || 75;
-    const adjustedCN = adjustCNForAMC(baseCN, amc);
-    const S = 1000 / adjustedCN - 10;
-    const Ia = 0.2 * S;
-    const data = [];
-
-    for (let P = 0; P <= 10; P += 0.5) {
-      const runoff = P > Ia ? Math.pow(P - Ia, 2) / (P - Ia + S) : 0;
-      data.push({
-        rainfall: P,
-        runoff: Math.round(runoff * 100) / 100,
-        isSelected: Math.abs(P - rainfall[0]) < 0.25,
-      });
-    }
-    return data;
-  }, [landUse, soilType, amc, rainfall]);
-
-  const amcLabels = ["", "I (Dry)", "II (Normal)", "III (Wet)"];
+  const rainfallRunoffData = useMemo(
+    () => computeRainfallRunoffCurve(landUse, soilType, amc, rainfall[0]),
+    [landUse, soilType, amc, rainfall]
+  );
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 md:px-6">
@@ -184,7 +93,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(landUseLabels).map(([value, label]) => (
+                  {Object.entries(LAND_USE_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
@@ -211,7 +120,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                {soilDescriptions[soilType]}
+                {SOIL_DESCRIPTIONS[soilType]}
               </p>
             </div>
 
@@ -228,7 +137,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                     size="sm"
                     onClick={() => setAmc(condition)}
                   >
-                    {amcLabels[condition]}
+                    {AMC_LABELS[condition]}
                   </Button>
                 ))}
               </div>
