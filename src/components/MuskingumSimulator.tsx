@@ -99,27 +99,7 @@ const MuskingumSimulator = ({ onClose }: MuskingumSimulatorProps) => {
   
   // Calculate statistics
   const stats = useMemo(() => {
-    const inflowPeak = Math.max(...routedData.map(d => d.inflow));
-    const muskingumPeak = Math.max(...routedData.map(d => d.muskingumOutflow));
-    const kinematicPeak = Math.max(...routedData.map(d => d.kinematicOutflow));
-    
-    const inflowPeakTime = routedData.find(d => d.inflow === inflowPeak)?.time || 0;
-    const muskingumPeakTime = routedData.find(d => d.muskingumOutflow === muskingumPeak)?.time || 0;
-    const kinematicPeakTime = routedData.find(d => d.kinematicOutflow === kinematicPeak)?.time || 0;
-    
-    const attenuation = ((inflowPeak - muskingumPeak) / inflowPeak) * 100;
-    const translation = muskingumPeakTime - inflowPeakTime;
-    
-    return {
-      inflowPeak,
-      muskingumPeak,
-      kinematicPeak,
-      inflowPeakTime,
-      muskingumPeakTime,
-      kinematicPeakTime,
-      attenuation: Math.round(attenuation * 10) / 10,
-      translation: Math.round(translation * 100) / 100,
-    };
+    return computeRoutingStats(routedData);
   }, [routedData]);
 
   return (
