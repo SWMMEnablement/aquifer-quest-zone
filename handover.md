@@ -23,6 +23,8 @@
 12. [Dependencies](#12-dependencies)
 13. [Testing](#13-testing)
 14. [Known Considerations & Future Work](#14-known-considerations--future-work)
+15. [Project Evaluation & Scorecard](#15-project-evaluation--scorecard)
+16. [Interactive Diagram Roadmap](#16-interactive-diagram-roadmap)
 
 ---
 
