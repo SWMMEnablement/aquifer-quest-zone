@@ -715,7 +715,7 @@ All CSS variables are redefined for dark mode:
    - Extract sub-components for input panels, chart sections, result displays
    - Create shared hooks for common patterns (animation playback, slider normalization)
 
-2. **No URL-based module routing:** Modules can't be deep-linked. Adding routes like `/modules/cn-calculator` would improve shareability and browser history.
+2. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
 
 3. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
 
