@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Play, Pause, RotateCcw, Waves, Info, Zap } from "lucide-react";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -20,15 +19,20 @@ import {
   ResponsiveContainer,
   Legend,
   Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
+import {
+  type HydrographType,
+  generateHydrograph,
+  calculateManningVelocity,
+  calculateRoutingK,
+  routeHydrograph,
+  computeRoutingStats,
+} from "@/lib/hydrology/muskingum";
 
 interface MuskingumSimulatorProps {
   onClose: () => void;
 }
-
-type HydrographType = "triangular" | "trapezoidal" | "scs";
 
 const MuskingumSimulator = ({ onClose }: MuskingumSimulatorProps) => {
   // Channel parameters
