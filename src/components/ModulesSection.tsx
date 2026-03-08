@@ -5,6 +5,7 @@ import {
   Mountain,
   Sun,
   TreePine,
+  Activity,
 } from "lucide-react";
 import ModuleCard from "./ModuleCard";
 
@@ -20,6 +21,15 @@ const modules = [
       "Interactive SCS Runoff Curve Number method with sensitivity analysis, AMC variations, and method comparison.",
     icon: Calculator,
     color: "blue" as const,
+    status: "available" as const,
+  },
+  {
+    id: "saint-venant",
+    title: "Saint-Venant Wave Explorer",
+    description:
+      "Toggle equation terms to visualize how wave behavior changes — from dynamic to diffusion to kinematic.",
+    icon: Activity,
+    color: "teal" as const,
     status: "available" as const,
   },
   {
