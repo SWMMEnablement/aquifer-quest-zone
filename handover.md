@@ -738,9 +738,80 @@ All CSS variables are redefined for dark mode:
 - No virtualization or lazy loading of module components
 
 ### Potential Enhancements
-- Export calculation results as PDF reports
-- Add challenge/scenario modes with pre-loaded real-world problems
+- Export calculation results as PDF/CSV reports for homework submissions
+- Add challenge/scenario modes with pre-loaded real-world problems (e.g., "Route the 1997 Red River flood hydrograph")
 - Progress tracking across learning paths
-- Comparison mode (side-by-side parameter scenarios)
-- Mobile-optimized touch interactions for sliders
-- Internationalization (i18n) support
+- Comparison/split-screen mode for side-by-side parameter scenarios
+- Mobile-optimized touch interactions for sliders (add numeric input fields as alternatives)
+- Internationalization (i18n) support — Spanish would pair naturally with Ponce's Spanish-language texts (Hidráulica de Canales)
+- "Predict before you calculate" interactive assessment prompts to increase pedagogical value
+- "What's This?" tooltip system for technical terms (hover to get definitions)
+- Debounce chart re-renders when sliders are being dragged continuously
+
+---
+
+## 15. Project Evaluation & Scorecard
+
+### Overall Grade: **B+ / A-** (~86/100)
+
+An impressive educational web app — well-conceived, visually polished, and meaningfully interactive. It translates Prof. Ponce's foundational work into an engaging browser-based experience. Below is a breakdown by category with actionable improvement paths.
+
+### Category Scores
+
+| Category | Grade | Weight | Notes |
+|---|---|---|---|
+| Concept & Educational Value | A (93) | 20% | Strong topic coverage, good learning paths, clear "go deeper" pathway via ponce.sdsu.edu |
+| Technical Architecture | B (83) | 20% | Modern stack, but monolithic components and dependency bloat |
+| UI/UX Design | A- (90) | 15% | Polished water theme, cohesive design system, proper dark mode |
+| Code Quality & Maintainability | B (82) | 15% | TypeScript + excellent docs, but no separation of concerns |
+| Scientific Accuracy & Attribution | B+ (86) | 15% | Well-attributed, but needs validation against textbook solutions |
+| Testing & Reliability | D+ (65) | 10% | Near-zero test coverage is a significant risk for scientific calculations |
+| Performance & Accessibility | B- (78) | 5% | Adequate baseline from Radix, but gaps in SVG a11y and mobile |
+
+### Strengths
+- Six modules cover a genuinely useful cross-section of hydrology topics mapping well to a standard curriculum
+- Learning paths (Beginner → Practitioner → Researcher) give structure to what could be a random collection of calculators
+- The water-themed HSL design system is cohesive, attractive, and maintainable
+- Going fully client-side was the right call — zero hosting costs, zero privacy concerns
+- The handover documentation is exemplary and serves as a model for project documentation
+- Groundwater "game" and interactive watershed SVG are creative pedagogical choices
+
+### Weaknesses
+- **Monolithic module components (400–800+ lines)** mix UI, state, and scientific calculations — hardest to test and maintain
+- **Near-zero test coverage** — if someone introduces a bug in the CN formula, nothing catches it
+- **No assessment or feedback mechanism** — students can play with sliders but can't test understanding
+- **State loss on module close** — accidentally clicking "back" resets all work
+- **"380+ Concepts" stat** on landing page seems inflated and unsubstantiated, could undermine credibility
+- **Magic numbers in calculations** — constants like `25400`, `254`, `0.2` appear inline without named constants or references
+- **SVG visualizations lack ARIA labels** — screen reader users get nothing from watershed map or channel cross-section
+- **Color-only health indicators** (red/yellow/green) should include icons (✓, ⚠, ✗) alongside color
+- **Dependency bloat** — 15+ packages installed but unused (`@tanstack/react-query`, `next-themes`, `react-hook-form`, `zod`, `date-fns`, `cmdk`, etc.)
+- **No lazy loading** — all 3,300+ lines of module code bundled upfront via `React.lazy()` + `Suspense`
+- **Hydro-Ecological weighting formulas** (e.g., "Fish Health = 80% flow/quality + 20% habitat") should be clearly labeled as illustrative, not empirically derived
+
+### Priority Improvement Roadmap
+
+#### High Priority
+1. **Extract calculation logic into testable utility modules** — Create `src/lib/hydrology/cn-method.ts`, `muskingum.ts`, `manning.ts`, etc. with pure functions. Highest-impact refactor.
+2. **Write calculation verification tests** — Take 3–5 worked examples from Ponce's textbook for each module and write Vitest tests asserting correct output. Non-negotiable for a scientific education tool.
+3. **Clean up unused dependencies** — Remove `@tanstack/react-query`, `next-themes`, `react-hook-form`, `zod`, `date-fns`, `react-day-picker`, `input-otp`, `embla-carousel-react`, `react-resizable-panels`, `cmdk`. Run a bundle analyzer to verify.
+4. **Add "Simplifications & Limitations" notices** in each module's UI, not just in the documentation tabs.
+5. **Replace magic numbers with named constants** — Add JSDoc comments with equation references (e.g., "Eq. 5.15, Ponce 2014").
+
+#### Medium Priority
+6. **Lazy-load module components** with `React.lazy()` + `Suspense` to reduce initial bundle size.
+7. **Persist module state in sessionStorage or context** so users don't lose work when navigating between modules.
+8. **Add ARIA labels to all SVG visualizations** — at minimum `role="img"` and `aria-label` with text descriptions.
+9. **Add interactive assessment features** — "predict and check" prompts would dramatically increase pedagogical value.
+10. **Add breadcrumb/progress indicators** when inside a module for learning path context.
+
+#### Lower Priority
+11. Add PDF/CSV export of calculation results for homework submissions.
+12. Add pre-loaded challenge scenarios based on real watersheds.
+13. Add comparison/split-screen mode for side-by-side parameter analysis.
+14. Debounce Recharts re-renders when sliders are being dragged continuously.
+15. Add a "What's This?" tooltip system for technical terms in the UI.
+16. Internationalization — Spanish support to pair with Ponce's Spanish-language texts.
+
+### Path from B+ to A+
+The path forward is primarily about **engineering discipline** (tests, separation of concerns, dependency hygiene) and **pedagogical depth** (assessment, validation, limitations transparency). The scientific foundation from Ponce's work is solid; the app needs to earn the same level of trust in its implementation.
