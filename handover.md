@@ -56,14 +56,14 @@
 | **UI Components** | shadcn/ui (Radix UI primitives) | Accessible, composable component library |
 | **Charts** | Recharts 2.15 | SVG-based charting for data visualization |
 | **Icons** | Lucide React 0.462 | Consistent iconography |
-| **Routing** | React Router DOM 6.30 | Client-side routing (minimal usage — SPA) |
+| **Routing** | React Router DOM 6.30 | Client-side routing with URL-based module navigation |
 | **State** | React useState/useMemo | Local component state only (no global store) |
 | **Testing** | Vitest 3.2 + Testing Library | Unit/component testing |
 
 ### Key Architectural Decisions
 - **No backend:** All calculations run client-side in the browser. No data persistence.
 - **No global state:** Each module manages its own state independently via React hooks.
-- **Single-page with module switching:** Instead of route-based navigation, modules are shown/hidden via `activeModule` state in `Index.tsx`.
+- **URL-based module routing:** Each module has its own route (`/modules/:moduleId`) via `ModulePage.tsx`, enabling deep-linking and sharing.
 - **Large monolithic module components:** Each module (CN Calculator, Groundwater Simulator, etc.) is a single 400–800 line component containing UI, state, and calculation logic. This is a known area for future refactoring.
 
 ---
@@ -79,7 +79,8 @@ src/
 ├── vite-env.d.ts                     # Vite type declarations
 │
 ├── pages/
-│   ├── Index.tsx                     # Main page — module switcher and landing page orchestrator
+│   ├── Index.tsx                     # Landing page with Hero, GettingStarted, ModulesSection, Footer
+│   ├── ModulePage.tsx                # Dynamic module renderer — maps :moduleId param to module components
 │   └── NotFound.tsx                  # 404 catch-all route
 │
 ├── components/
@@ -138,34 +139,41 @@ src/
 ## 4. Routing & Navigation
 
 ### URL Routes (React Router)
-The app uses React Router but has minimal routing:
+The app uses React Router with URL-based module routing for deep-linking:
 
 | Route | Component | Description |
 |-------|-----------|-------------|
-| `/` | `Index` | Main application page |
+| `/` | `Index` | Landing page (Hero, GettingStarted, ModulesSection, Footer) |
+| `/modules/:moduleId` | `ModulePage` | Dynamic module renderer |
 | `*` | `NotFound` | 404 catch-all |
 
-### Module Navigation (In-Page State)
-Modules are **not** URL-routed. Instead, `Index.tsx` manages an `activeModule` state variable:
+### Supported Module IDs
+| URL Path | Module Component |
+|----------|-----------------|
+| `/modules/cn-calculator` | `CNCalculator` |
+| `/modules/groundwater` | `GroundwaterSimulator` |
+| `/modules/muskingum-routing` | `MuskingumSimulator` |
+| `/modules/channel-design` | `StableChannelWizard` |
+| `/modules/albedo` | `AlbedoWaterBalance` |
+| `/modules/hydroecology` | `HydroEcologicalTracker` |
+| `/modules/documentation` | `Documentation` |
 
-```typescript
-type ActiveModule = null | "cn-calculator" | "groundwater" | "muskingum-routing" 
-                        | "channel-design" | "albedo" | "hydroecology" | "documentation";
-```
+### ModulePage (`src/pages/ModulePage.tsx`)
+- Reads `:moduleId` from URL params via `useParams()`
+- Looks up the component from a `moduleComponents` record mapping IDs to React components
+- If the module ID is invalid, renders a "Module Not Found" page with a link back to home
+- Close/back button navigates to `/` via `useNavigate()`
+- Docs link navigates to `/modules/documentation`
 
-- **`null`** → Landing page (Hero + GettingStarted + ModulesSection + Footer)
-- **Any module ID** → That module component is rendered, landing page is hidden
-
-**Flow:**
-1. User clicks a module card → `openModule(moduleId)` sets `activeModule` and scrolls to top
-2. Module component renders with `pt-16` padding (to clear the fixed header)
-3. Each module has a back/close button → calls `onClose()` → `setActiveModule(null)`
+### Index Page Navigation
+- `Index.tsx` uses `useNavigate()` to navigate to `/modules/:moduleId` when a module card is clicked
+- No in-page state management for module switching — fully URL-driven
 
 ### Header Behavior
 - `Header` receives `isCalculatorOpen` boolean (true when any module is active)
 - When on landing page: transparent background, white text (over hero gradient)
 - When module is open: solid background with blur, standard foreground text
-- "Docs" button calls `onOpenDocs()` → opens Documentation module
+- "Docs" button calls `onOpenDocs()` → navigates to `/modules/documentation`
 
 ---
 
@@ -520,39 +528,41 @@ Each tab contains:
 There is **no global state management** (no Redux, Zustand, Context, etc.). Each component manages its own state:
 
 ```
-Index.tsx
-├── activeModule (which module is shown)
+App.tsx (Router, Providers)
+├── Index.tsx (Landing page)
+│   └── Header.tsx
+│       ├── mobileMenuOpen (mobile nav toggle)
+│       └── isDark (theme toggle, persisted to localStorage)
 │
-├── Header.tsx
-│   ├── mobileMenuOpen (mobile nav toggle)
-│   └── isDark (theme toggle, persisted to localStorage)
-│
-├── CNCalculator.tsx
-│   ├── soilType, landUse, rainfall, amc (inputs)
-│   └── derived calculations via useMemo
-│
-├── GroundwaterSimulator.tsx
-│   ├── pumpingRate, rechargeRate, etc. (inputs)
-│   ├── timeSeriesData (simulation output)
-│   └── isPlaying, currentYear (animation state)
-│
-├── MuskingumSimulator.tsx
-│   ├── reachLength, celerity, routingX, etc.
-│   ├── routingData (computed hydrographs)
-│   └── isPlaying, timeStep (animation state)
-│
-├── StableChannelWizard.tsx
-│   ├── channelParams (discharge, slope, sediment, etc.)
-│   └── computed geometry via useMemo
-│
-├── AlbedoWaterBalance.tsx
-│   ├── surfaceType, albedo, latitude, etc.
-│   └── energy/water balance via useMemo
-│
-└── HydroEcologicalTracker.tsx
-    ├── landUseDistribution (Record<string, number>)
-    ├── precipitation, waterDiversion
-    └── watershedMetrics via useMemo
+├── ModulePage.tsx (Dynamic module renderer via URL params)
+│   ├── Header.tsx (shared)
+│   │
+│   ├── CNCalculator.tsx
+│   │   ├── soilType, landUse, rainfall, amc (inputs)
+│   │   └── derived calculations via useMemo
+│   │
+│   ├── GroundwaterSimulator.tsx
+│   │   ├── pumpingRate, rechargeRate, etc. (inputs)
+│   │   ├── timeSeriesData (simulation output)
+│   │   └── isPlaying, currentYear (animation state)
+│   │
+│   ├── MuskingumSimulator.tsx
+│   │   ├── reachLength, celerity, routingX, etc.
+│   │   ├── routingData (computed hydrographs)
+│   │   └── isPlaying, timeStep (animation state)
+│   │
+│   ├── StableChannelWizard.tsx
+│   │   ├── channelParams (discharge, slope, sediment, etc.)
+│   │   └── computed geometry via useMemo
+│   │
+│   ├── AlbedoWaterBalance.tsx
+│   │   ├── surfaceType, albedo, latitude, etc.
+│   │   └── energy/water balance via useMemo
+│   │
+│   └── HydroEcologicalTracker.tsx
+│       ├── landUseDistribution (Record<string, number>)
+│       ├── precipitation, waterDiversion
+│       └── watershedMetrics via useMemo
 ```
 
 ### Data Persistence
@@ -705,11 +715,9 @@ All CSS variables are redefined for dark mode:
    - Extract sub-components for input panels, chart sections, result displays
    - Create shared hooks for common patterns (animation playback, slider normalization)
 
-2. **No URL-based module routing:** Modules can't be deep-linked. Adding routes like `/modules/cn-calculator` would improve shareability and browser history.
+2. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
 
-3. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
-
-4. **Unused dependencies:** Several packages are installed but unused, adding to bundle size.
+3. **Unused dependencies:** Several packages are installed but unused, adding to bundle size.
 
 ### Content Accuracy
 - All scientific models are **simplified/conceptual** versions of the real methods
