@@ -6,6 +6,7 @@ import MuskingumSimulator from "@/components/MuskingumSimulator";
 import StableChannelWizard from "@/components/StableChannelWizard";
 import AlbedoWaterBalance from "@/components/AlbedoWaterBalance";
 import HydroEcologicalTracker from "@/components/HydroEcologicalTracker";
+import SaintVenantVisualizer from "@/components/SaintVenantVisualizer";
 import Documentation from "@/components/Documentation";
 
 const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
@@ -15,6 +16,7 @@ const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void
   "channel-design": StableChannelWizard,
   "albedo": AlbedoWaterBalance,
   "hydroecology": HydroEcologicalTracker,
+  "saint-venant": SaintVenantVisualizer,
   "documentation": Documentation,
 };
 
