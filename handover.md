@@ -528,39 +528,41 @@ Each tab contains:
 There is **no global state management** (no Redux, Zustand, Context, etc.). Each component manages its own state:
 
 ```
-Index.tsx
-├── activeModule (which module is shown)
+App.tsx (Router, Providers)
+├── Index.tsx (Landing page)
+│   └── Header.tsx
+│       ├── mobileMenuOpen (mobile nav toggle)
+│       └── isDark (theme toggle, persisted to localStorage)
 │
-├── Header.tsx
-│   ├── mobileMenuOpen (mobile nav toggle)
-│   └── isDark (theme toggle, persisted to localStorage)
-│
-├── CNCalculator.tsx
-│   ├── soilType, landUse, rainfall, amc (inputs)
-│   └── derived calculations via useMemo
-│
-├── GroundwaterSimulator.tsx
-│   ├── pumpingRate, rechargeRate, etc. (inputs)
-│   ├── timeSeriesData (simulation output)
-│   └── isPlaying, currentYear (animation state)
-│
-├── MuskingumSimulator.tsx
-│   ├── reachLength, celerity, routingX, etc.
-│   ├── routingData (computed hydrographs)
-│   └── isPlaying, timeStep (animation state)
-│
-├── StableChannelWizard.tsx
-│   ├── channelParams (discharge, slope, sediment, etc.)
-│   └── computed geometry via useMemo
-│
-├── AlbedoWaterBalance.tsx
-│   ├── surfaceType, albedo, latitude, etc.
-│   └── energy/water balance via useMemo
-│
-└── HydroEcologicalTracker.tsx
-    ├── landUseDistribution (Record<string, number>)
-    ├── precipitation, waterDiversion
-    └── watershedMetrics via useMemo
+├── ModulePage.tsx (Dynamic module renderer via URL params)
+│   ├── Header.tsx (shared)
+│   │
+│   ├── CNCalculator.tsx
+│   │   ├── soilType, landUse, rainfall, amc (inputs)
+│   │   └── derived calculations via useMemo
+│   │
+│   ├── GroundwaterSimulator.tsx
+│   │   ├── pumpingRate, rechargeRate, etc. (inputs)
+│   │   ├── timeSeriesData (simulation output)
+│   │   └── isPlaying, currentYear (animation state)
+│   │
+│   ├── MuskingumSimulator.tsx
+│   │   ├── reachLength, celerity, routingX, etc.
+│   │   ├── routingData (computed hydrographs)
+│   │   └── isPlaying, timeStep (animation state)
+│   │
+│   ├── StableChannelWizard.tsx
+│   │   ├── channelParams (discharge, slope, sediment, etc.)
+│   │   └── computed geometry via useMemo
+│   │
+│   ├── AlbedoWaterBalance.tsx
+│   │   ├── surfaceType, albedo, latitude, etc.
+│   │   └── energy/water balance via useMemo
+│   │
+│   └── HydroEcologicalTracker.tsx
+│       ├── landUseDistribution (Record<string, number>)
+│       ├── precipitation, waterDiversion
+│       └── watershedMetrics via useMemo
 ```
 
 ### Data Persistence
