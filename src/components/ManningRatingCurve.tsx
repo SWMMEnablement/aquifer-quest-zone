@@ -220,8 +220,8 @@ const ManningRatingCurve = ({ onClose }: Props) => {
               {/* Water surface line */}
               <line x1={-xRange} y1={currentDepth} x2={xRange} y2={currentDepth} stroke="hsl(var(--primary))" strokeWidth={yRange * 0.015} strokeDasharray={`${yRange * 0.04} ${yRange * 0.02}`} />
               {/* Critical depth line */}
-              {parseFloat(current.yc) > 0 && (
-                <line x1={-xRange} y1={parseFloat(current.yc)} x2={xRange} y2={parseFloat(current.yc)} stroke="hsl(var(--accent))" strokeWidth={yRange * 0.01} strokeDasharray={`${yRange * 0.03} ${yRange * 0.02}`} />
+              {Number(current.yc) > 0 && (
+                <line x1={-xRange} y1={Number(current.yc)} x2={xRange} y2={Number(current.yc)} stroke="hsl(var(--accent))" strokeWidth={yRange * 0.01} strokeDasharray={`${yRange * 0.03} ${yRange * 0.02}`} />
               )}
             </svg>
             <div className="flex gap-4 text-xs text-muted-foreground mt-2 justify-center">
