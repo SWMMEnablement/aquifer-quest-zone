@@ -817,3 +817,73 @@ An impressive educational web app — well-conceived, visually polished, and mea
 
 ### Path from B+ to A+
 The path forward is primarily about **engineering discipline** (tests, separation of concerns, dependency hygiene) and **pedagogical depth** (assessment, validation, limitations transparency). The scientific foundation from Ponce's work is solid; the app needs to earn the same level of trust in its implementation.
+
+---
+
+## 16. Interactive Diagram Roadmap
+
+This section documents the comprehensive blueprint for interactive visualizations covering every major topic on Prof. Ponce's website. Each design specifies what the user sees, what they control, what updates in real time, and the underlying science.
+
+### Implementation Priority Matrix
+
+| Priority | Diagrams | Status |
+|---|---|---|
+| **Critical** | 1C Saint-Venant Visualizer | ✅ **BUILT** — `/modules/saint-venant` |
+| **Critical** | 2A Complete CN Diagram | ✅ Exists as CN Calculator (enhancement planned) |
+| **Critical** | 8A Manning Rating Curve Builder | 🔲 Not started |
+| **Critical** | 9A Complete Muskingum-Cunge Dashboard | ✅ Exists as Muskingum Simulator (enhancement planned) |
+| **Critical** | 5A Aquifer Cross-Section Simulator | ✅ Exists as Groundwater Simulator (enhancement planned) |
+| **Critical** | 4A Albedo Energy Balance Diagram | ✅ Exists as Albedo module (enhancement planned) |
+| **High** | 1A Wave Celerity Explorer | 🔲 Not started |
+| **High** | 1B Vedernikov Number & Roll Wave Simulator | 🔲 Not started |
+| **High** | 8C Specific Energy & Momentum Diagrams | 🔲 Not started |
+| **High** | 10A Regime Theory Design Tool | 🔲 Not started |
+| **High** | 11A Catchment Water Balance Explorer | 🔲 Not started |
+| **High** | 7A Form Friction Decomposer | 🔲 Not started |
+| **Medium** | 3A GW Pumping Ecosystem Impact | 🔲 Not started |
+| **Medium** | 6A Lane's Balance | 🔲 Not started |
+| **Medium** | 12A WES Spillway Design | 🔲 Not started |
+| **Medium** | 2B Unit Hydrograph Constructor | 🔲 Not started |
+| **Medium** | 8B GVF Profile Classifier | 🔲 Not started |
+| **Enhancement** | 14A Calculator Discovery Hub | 🔲 Not started |
+| **Enhancement** | 15A Concept Map Navigator | 🔲 Not started |
+| **Enhancement** | 16A Video Lecture Companion | 🔲 Not started |
+
+### Design Principles
+
+Every diagram follows these principles from Ponce's educational philosophy:
+
+1. **Show the physics, not just the math.** Every equation has a visual counterpart — arrows, animated flows, color gradients — that builds physical intuition.
+2. **Make consequences visible.** When a student changes an input, downstream effects propagate through the entire visualization.
+3. **Connect theory to practice.** Include real-world scenarios alongside abstract parameters.
+4. **Respect the complexity.** Where methods have limitations, diagrams explicitly show and explain boundaries.
+5. **Honor the source.** Every diagram links back to the specific Ponce publication it draws from.
+
+### Detailed Diagram Specifications
+
+The full specifications for each diagram (user controls, live visualizations, teaching interactions, and underlying equations) are maintained in the project planning documents. Key upcoming builds:
+
+#### 8A — Manning's Rating Curve Builder
+- Cross-section shape selector (rectangular/trapezoidal/triangular/circular/parabolic)
+- Animated water surface rising/falling with depth slider
+- Live rating curve Q vs y, V vs y, Fr vs y
+- Critical and normal depth markers
+- Full Manning's equation table output
+
+#### 8C — Specific Energy & Momentum Diagrams
+- Side-by-side E-y and M-y diagrams updating together
+- Draggable operating point on curves
+- Conjugate depths for hydraulic jump (same M, different y)
+- Animated hydraulic jump visualizer with jump classification
+
+#### 1A — Wave Celerity Explorer
+- Side-view animated channel with wave pulse
+- Froude number color coding (blue subcritical, red supercritical)
+- All four wave celerities displayed in real time
+- Velocity profile arrows beneath the surface
+
+#### 7A — Form Friction Decomposer
+- Channel bed with animated bedforms (ripples → dunes → antidunes)
+- n = n_grain + n_form decomposition bar
+- Shields diagram inset
+- Non-monotonic friction behavior as velocity increases
