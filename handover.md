@@ -56,14 +56,14 @@
 | **UI Components** | shadcn/ui (Radix UI primitives) | Accessible, composable component library |
 | **Charts** | Recharts 2.15 | SVG-based charting for data visualization |
 | **Icons** | Lucide React 0.462 | Consistent iconography |
-| **Routing** | React Router DOM 6.30 | Client-side routing (minimal usage — SPA) |
+| **Routing** | React Router DOM 6.30 | Client-side routing with URL-based module navigation |
 | **State** | React useState/useMemo | Local component state only (no global store) |
 | **Testing** | Vitest 3.2 + Testing Library | Unit/component testing |
 
 ### Key Architectural Decisions
 - **No backend:** All calculations run client-side in the browser. No data persistence.
 - **No global state:** Each module manages its own state independently via React hooks.
-- **Single-page with module switching:** Instead of route-based navigation, modules are shown/hidden via `activeModule` state in `Index.tsx`.
+- **URL-based module routing:** Each module has its own route (`/modules/:moduleId`) via `ModulePage.tsx`, enabling deep-linking and sharing.
 - **Large monolithic module components:** Each module (CN Calculator, Groundwater Simulator, etc.) is a single 400–800 line component containing UI, state, and calculation logic. This is a known area for future refactoring.
 
 ---
