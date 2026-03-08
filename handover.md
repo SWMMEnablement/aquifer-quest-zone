@@ -717,9 +717,7 @@ All CSS variables are redefined for dark mode:
 
 2. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
 
-3. **No data persistence:** Users lose all work on page refresh. Could add localStorage or IndexedDB for session recovery.
-
-4. **Unused dependencies:** Several packages are installed but unused, adding to bundle size.
+3. **Unused dependencies:** Several packages are installed but unused, adding to bundle size.
 
 ### Content Accuracy
 - All scientific models are **simplified/conceptual** versions of the real methods
