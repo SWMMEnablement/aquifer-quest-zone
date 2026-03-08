@@ -187,7 +187,7 @@ const ManningRatingCurve = ({ onClose }: Props) => {
                 <span className="text-muted-foreground">Velocity V:</span><span className="font-mono">{current.V} m/s</span>
                 <span className="text-muted-foreground">Discharge Q:</span><span className="font-mono font-bold">{current.Q} m³/s</span>
                 <span className="text-muted-foreground">Froude Fr:</span>
-                <span className={`font-mono ${parseFloat(current.Fr) > 1 ? 'text-destructive font-bold' : ''}`}>{current.Fr}</span>
+                <span className={`font-mono ${Number(current.Fr) > 1 ? 'text-destructive font-bold' : ''}`}>{current.Fr}</span>
                 <span className="text-muted-foreground">Specific E:</span><span className="font-mono">{current.E} m</span>
                 <span className="text-muted-foreground">Critical y<sub>c</sub>:</span><span className="font-mono text-accent">{current.yc} m</span>
               </div>
