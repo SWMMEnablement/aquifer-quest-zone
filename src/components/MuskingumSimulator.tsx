@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Play, Pause, RotateCcw, Waves, Info, Zap } from "lucide-react";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -20,15 +19,20 @@ import {
   ResponsiveContainer,
   Legend,
   Area,
-  AreaChart,
   ComposedChart,
 } from "recharts";
+import {
+  type HydrographType,
+  generateHydrograph,
+  calculateManningVelocity,
+  calculateRoutingK,
+  routeHydrograph,
+  computeRoutingStats,
+} from "@/lib/hydrology/muskingum";
 
 interface MuskingumSimulatorProps {
   onClose: () => void;
 }
-
-type HydrographType = "triangular" | "trapezoidal" | "scs";
 
 const MuskingumSimulator = ({ onClose }: MuskingumSimulatorProps) => {
   // Channel parameters
@@ -53,111 +57,18 @@ const MuskingumSimulator = ({ onClose }: MuskingumSimulatorProps) => {
   
   // Generate input hydrograph
   const inputHydrograph = useMemo(() => {
-    const data: { time: number; inflow: number }[] = [];
-    const duration = baseDuration[0];
-    const peak = peakFlow[0];
-    const dt = timeStep[0];
-    const totalTime = duration * 3; // Run for 3x duration
-    
-    for (let t = 0; t <= totalTime; t += dt) {
-      let flow = 0;
-      
-      if (hydrographType === "triangular") {
-        const timeToPeak = duration * 0.4;
-        if (t <= timeToPeak) {
-          flow = (peak * t) / timeToPeak;
-        } else if (t <= duration) {
-          flow = peak * (1 - (t - timeToPeak) / (duration - timeToPeak));
-        }
-      } else if (hydrographType === "trapezoidal") {
-        const riseTime = duration * 0.3;
-        const peakDuration = duration * 0.2;
-        const fallTime = duration * 0.5;
-        
-        if (t <= riseTime) {
-          flow = (peak * t) / riseTime;
-        } else if (t <= riseTime + peakDuration) {
-          flow = peak;
-        } else if (t <= duration) {
-          flow = peak * (1 - (t - riseTime - peakDuration) / fallTime);
-        }
-      } else if (hydrographType === "scs") {
-        // SCS dimensionless unit hydrograph approximation
-        const tp = duration * 0.375; // time to peak
-        const tr = tp / 0.6; // recession time
-        if (t <= tp) {
-          flow = peak * Math.pow(t / tp, 3);
-        } else {
-          const tRec = (t - tp) / tr;
-          flow = peak * Math.exp(-1.5 * tRec);
-        }
-      }
-      
-      data.push({ time: t, inflow: Math.max(0, Math.round(flow * 100) / 100) });
-    }
-    
-    return data;
+    return generateHydrograph(hydrographType, peakFlow[0], baseDuration[0], timeStep[0]);
   }, [hydrographType, peakFlow, baseDuration, timeStep]);
   
   // Calculate Muskingum K parameter (travel time)
   const routingK = useMemo(() => {
-    // K = L / c, where c is wave celerity
-    // For flood waves: c ≈ 1.5 * V (kinematic wave approximation)
-    // Use Manning's equation to estimate average velocity
-    const avgDepth = 2; // assumed average depth in meters
-    const hydraulicRadius = (channelWidth[0] * avgDepth) / (channelWidth[0] + 2 * avgDepth);
-    const velocity = (1 / manningsN[0]) * Math.pow(hydraulicRadius, 2/3) * Math.pow(channelSlope[0], 0.5);
-    const waveCelerity = 1.5 * velocity;
-    const K = reachLength[0] / waveCelerity / 3600; // convert to hours
-    return Math.round(K * 100) / 100;
+    const velocity = calculateManningVelocity(channelWidth[0], manningsN[0], channelSlope[0]);
+    return calculateRoutingK(reachLength[0], velocity);
   }, [reachLength, channelSlope, manningsN, channelWidth]);
   
   // Route hydrograph using Muskingum method
   const routedData = useMemo(() => {
-    const K = routingK;
-    const X = routingX[0];
-    const dt = timeStep[0];
-    
-    // Muskingum routing coefficients
-    const denom = 2 * K * (1 - X) + dt;
-    const C0 = (dt - 2 * K * X) / denom;
-    const C1 = (dt + 2 * K * X) / denom;
-    const C2 = (2 * K * (1 - X) - dt) / denom;
-    
-    const data = inputHydrograph.map((point, i) => {
-      let muskingumOutflow = 0;
-      let kinematicOutflow = 0;
-      
-      if (i === 0) {
-        muskingumOutflow = point.inflow;
-        kinematicOutflow = point.inflow;
-      } else {
-        const prevData = inputHydrograph[i - 1];
-        const prevMuskingum = data[i - 1]?.muskingumOutflow || prevData.inflow;
-        
-        // Muskingum-Cunge routing
-        muskingumOutflow = Math.max(0, 
-          C0 * point.inflow + 
-          C1 * prevData.inflow + 
-          C2 * prevMuskingum
-        );
-        
-        // Simple kinematic wave (pure translation, less attenuation)
-        // Translate by K hours
-        const lagSteps = Math.floor(K / dt);
-        const lagIndex = Math.max(0, i - lagSteps);
-        kinematicOutflow = inputHydrograph[lagIndex]?.inflow || 0;
-      }
-      
-      return {
-        time: point.time,
-        inflow: point.inflow,
-        muskingumOutflow: Math.round(muskingumOutflow * 100) / 100,
-        kinematicOutflow: Math.round(kinematicOutflow * 100) / 100,
-      };
-    });
-    
-    return data;
+    return routeHydrograph(inputHydrograph, routingK, routingX[0], timeStep[0]);
   }, [inputHydrograph, routingK, routingX, timeStep]);
   
   // Get current animation data
@@ -188,27 +99,7 @@ const MuskingumSimulator = ({ onClose }: MuskingumSimulatorProps) => {
   
   // Calculate statistics
   const stats = useMemo(() => {
-    const inflowPeak = Math.max(...routedData.map(d => d.inflow));
-    const muskingumPeak = Math.max(...routedData.map(d => d.muskingumOutflow));
-    const kinematicPeak = Math.max(...routedData.map(d => d.kinematicOutflow));
-    
-    const inflowPeakTime = routedData.find(d => d.inflow === inflowPeak)?.time || 0;
-    const muskingumPeakTime = routedData.find(d => d.muskingumOutflow === muskingumPeak)?.time || 0;
-    const kinematicPeakTime = routedData.find(d => d.kinematicOutflow === kinematicPeak)?.time || 0;
-    
-    const attenuation = ((inflowPeak - muskingumPeak) / inflowPeak) * 100;
-    const translation = muskingumPeakTime - inflowPeakTime;
-    
-    return {
-      inflowPeak,
-      muskingumPeak,
-      kinematicPeak,
-      inflowPeakTime,
-      muskingumPeakTime,
-      kinematicPeakTime,
-      attenuation: Math.round(attenuation * 10) / 10,
-      translation: Math.round(translation * 100) / 100,
-    };
+    return computeRoutingStats(routedData);
   }, [routedData]);
 
   return (
