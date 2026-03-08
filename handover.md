@@ -79,7 +79,8 @@ src/
 ├── vite-env.d.ts                     # Vite type declarations
 │
 ├── pages/
-│   ├── Index.tsx                     # Main page — module switcher and landing page orchestrator
+│   ├── Index.tsx                     # Landing page with Hero, GettingStarted, ModulesSection, Footer
+│   ├── ModulePage.tsx                # Dynamic module renderer — maps :moduleId param to module components
 │   └── NotFound.tsx                  # 404 catch-all route
 │
 ├── components/
