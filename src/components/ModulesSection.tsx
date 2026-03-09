@@ -3,7 +3,7 @@ import {
   Gauge, Zap, GitBranch, CloudRain, BarChart3, Compass,
   FlaskConical, Wind, Pipette, ArrowDownUp, Thermometer,
   Fish, Scale, Layers, Shield, Building, Network, Map,
-  Grid3X3,
+  Grid3X3, CloudDrizzle,
 } from "lucide-react";
 import ModuleCard from "./ModuleCard";
 
