@@ -27,6 +27,11 @@ import ETCalculatorSuite from "@/components/ETCalculatorSuite";
 import EnvironmentalFlowCalculator from "@/components/EnvironmentalFlowCalculator";
 import FroudeNumberExplorer from "@/components/FroudeNumberExplorer";
 import CulvertAnalyzer from "@/components/CulvertAnalyzer";
+import TractiveForceWizard from "@/components/TractiveForceWizard";
+import StillingBasinDesigner from "@/components/StillingBasinDesigner";
+import ChannelClassification from "@/components/ChannelClassification";
+import GWRechargeCalculator from "@/components/GWRechargeCalculator";
+import CalculatorHub from "@/components/CalculatorHub";
 
 const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
   "cn-calculator": CNCalculator,
