@@ -61,6 +61,11 @@ const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void
   "environmental-flow": EnvironmentalFlowCalculator,
   "froude-explorer": FroudeNumberExplorer,
   "culvert-hydraulics": CulvertAnalyzer,
+  "tractive-force": TractiveForceWizard,
+  "stilling-basin": StillingBasinDesigner,
+  "channel-classification": ChannelClassification,
+  "gw-recharge": GWRechargeCalculator,
+  "calculator-hub": CalculatorHub,
 };
 
 const ModulePage = () => {
