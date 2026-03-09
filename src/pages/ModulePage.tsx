@@ -73,6 +73,7 @@ const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void
   "workflow-builder": WorkflowBuilder,
   "nutshells-graph": NutshellsGraph,
   "video-lectures": VideoLectureCompanion,
+  "swmm-calculator": SWMMCalculator,
 };
 
 const ModulePage = () => {

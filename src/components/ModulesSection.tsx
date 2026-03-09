@@ -112,6 +112,13 @@ const domains: DomainGroup[] = [
     ],
   },
   {
+    domain: "Urban Stormwater (SWMM)",
+    description: "Gutters, inlets, pipe flow, weirs, water hammer, and pump curves",
+    modules: [
+      { id: "swmm-calculator", title: "SWMM Urban Hydraulics Suite", description: "6-tab stormwater toolbox: gutter flow, inlet design, pipe flow, weirs, water hammer, pump curves.", icon: CloudDrizzle, color: "teal", status: "available" },
+    ],
+  },
+  {
     domain: "Learning & Platform",
     description: "Knowledge graph, workflow builder, and lecture companion",
     modules: [
