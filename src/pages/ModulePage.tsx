@@ -35,6 +35,7 @@ import CalculatorHub from "@/components/CalculatorHub";
 import WorkflowBuilder from "@/components/WorkflowBuilder";
 import NutshellsGraph from "@/components/NutshellsGraph";
 import VideoLectureCompanion from "@/components/VideoLectureCompanion";
+import SWMMCalculator from "@/components/SWMMCalculator";
 
 const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
   "cn-calculator": CNCalculator,
