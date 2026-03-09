@@ -3,7 +3,7 @@ import {
   Gauge, Zap, GitBranch, CloudRain, BarChart3, Compass,
   FlaskConical, Wind, Pipette, ArrowDownUp, Thermometer,
   Fish, Scale, Layers, Shield, Building, Network, Map,
-  Grid3X3,
+  Grid3X3, CloudDrizzle,
 } from "lucide-react";
 import ModuleCard from "./ModuleCard";
 
@@ -109,6 +109,13 @@ const domains: DomainGroup[] = [
     modules: [
       { id: "spillway-design", title: "WES Spillway Designer", description: "Ogee spillway profile, rating curve, and discharge computation.", icon: Building, color: "amber", status: "available" },
       { id: "stilling-basin", title: "Stilling Basin Designer", description: "USBR hydraulic jump basin with energy dissipation and tailwater analysis.", icon: Building, color: "amber", status: "available" },
+    ],
+  },
+  {
+    domain: "Urban Stormwater (SWMM)",
+    description: "Gutters, inlets, pipe flow, weirs, water hammer, and pump curves",
+    modules: [
+      { id: "swmm-calculator", title: "SWMM Urban Hydraulics Suite", description: "6-tab stormwater toolbox: gutter flow, inlet design, pipe flow, weirs, water hammer, pump curves.", icon: CloudDrizzle, color: "teal", status: "available" },
     ],
   },
   {
