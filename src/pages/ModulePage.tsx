@@ -32,6 +32,9 @@ import StillingBasinDesigner from "@/components/StillingBasinDesigner";
 import ChannelClassification from "@/components/ChannelClassification";
 import GWRechargeCalculator from "@/components/GWRechargeCalculator";
 import CalculatorHub from "@/components/CalculatorHub";
+import WorkflowBuilder from "@/components/WorkflowBuilder";
+import NutshellsGraph from "@/components/NutshellsGraph";
+import VideoLectureCompanion from "@/components/VideoLectureCompanion";
 
 const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
   "cn-calculator": CNCalculator,
@@ -66,6 +69,9 @@ const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void
   "channel-classification": ChannelClassification,
   "gw-recharge": GWRechargeCalculator,
   "calculator-hub": CalculatorHub,
+  "workflow-builder": WorkflowBuilder,
+  "nutshells-graph": NutshellsGraph,
+  "video-lectures": VideoLectureCompanion,
 };
 
 const ModulePage = () => {

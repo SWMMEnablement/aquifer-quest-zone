@@ -111,6 +111,15 @@ const domains: DomainGroup[] = [
       { id: "stilling-basin", title: "Stilling Basin Designer", description: "USBR hydraulic jump basin with energy dissipation and tailwater analysis.", icon: Building, color: "amber", status: "available" },
     ],
   },
+  {
+    domain: "Learning & Platform",
+    description: "Knowledge graph, workflow builder, and lecture companion",
+    modules: [
+      { id: "workflow-builder", title: "Workflow Builder", description: "Chain calculators to model complete hydrological processes.", icon: Network, color: "blue", status: "available" },
+      { id: "nutshells-graph", title: "Nutshells Knowledge Graph", description: "60+ interconnected hydrology concepts with equations and links.", icon: Network, color: "blue", status: "available" },
+      { id: "video-lectures", title: "Video Lecture Companion", description: "Synchronized diagrams that update with lecture content.", icon: Activity, color: "blue", status: "available" },
+    ],
+  },
 ];
 
 const totalModules = domains.reduce((acc, d) => acc + d.modules.length, 0);
