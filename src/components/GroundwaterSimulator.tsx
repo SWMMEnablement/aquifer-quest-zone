@@ -4,54 +4,30 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, Play, Pause, RotateCcw, Droplet, TreePine, AlertTriangle, TrendingDown, TrendingUp, Activity } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-  ReferenceLine,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine,
 } from "recharts";
+import { simulateAquiferStep, computeSustainableYield, type SimulationStep } from "@/lib/hydrology/groundwater";
 
 interface GroundwaterSimulatorProps {
   onClose: () => void;
 }
 
-interface TimeSeriesPoint {
-  year: number;
-  storage: number;
-  waterTable: number;
-  ecosystemHealth: number;
-  cumulativePumping: number;
-  cumulativeRecharge: number;
-}
-
 const GroundwaterSimulator = ({ onClose }: GroundwaterSimulatorProps) => {
-  // Aquifer parameters
-  const [rechargeRate, setRechargeRate] = useState([50]); // acre-feet/year
-  const [initialStorage, setInitialStorage] = useState([1000]); // acre-feet
-  const [specificYield, setSpecificYield] = useState([0.15]); // dimensionless
-  const [aquiferArea, setAquiferArea] = useState([500]); // acres
-  
-  // User-controlled pumping
-  const [pumpingRate, setPumpingRate] = useState([30]); // acre-feet/year
-  
-  // Simulation state
+  const [rechargeRate, setRechargeRate] = useState([50]);
+  const [initialStorage, setInitialStorage] = useState([1000]);
+  const [specificYield, setSpecificYield] = useState([0.15]);
+  const [aquiferArea, setAquiferArea] = useState([500]);
+  const [pumpingRate, setPumpingRate] = useState([30]);
   const [isRunning, setIsRunning] = useState(false);
   const [currentYear, setCurrentYear] = useState(0);
-  const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesPoint[]>([]);
+  const [timeSeriesData, setTimeSeriesData] = useState<SimulationStep[]>([]);
   const [gameOver, setGameOver] = useState(false);
   const [gameMessage, setGameMessage] = useState("");
   
-  // Calculate derived values
   const maxWaterTable = useMemo(() => {
     return initialStorage[0] / (aquiferArea[0] * specificYield[0]);
   }, [initialStorage, aquiferArea, specificYield]);
   
-  // Current state from simulation
   const currentState = useMemo(() => {
     if (timeSeriesData.length === 0) {
       return {
@@ -70,12 +46,7 @@ const GroundwaterSimulator = ({ onClose }: GroundwaterSimulatorProps) => {
     };
   }, [timeSeriesData, initialStorage, maxWaterTable, rechargeRate, pumpingRate]);
   
-  // Calculate sustainable yield
-  const sustainableYield = useMemo(() => {
-    // True sustainable yield considering ecosystem needs (baseflow)
-    const baseflowNeed = rechargeRate[0] * 0.3; // 30% for ecosystems
-    return rechargeRate[0] - baseflowNeed;
-  }, [rechargeRate]);
+  const sustainableYield = useMemo(() => computeSustainableYield(rechargeRate[0]), [rechargeRate]);
   
   // Simulation step
   const simulateStep = useCallback(() => {

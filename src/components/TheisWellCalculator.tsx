@@ -5,73 +5,28 @@ import { Label } from "@/components/ui/label";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { computeDrawdown, generateDrawdownProfile, generateWellFunctionCurve } from "@/lib/hydrology/groundwater";
 
 interface Props { onClose: () => void; }
 
-// Well function W(u) approximation (Theis)
-const wellFunction = (u: number): number => {
-  if (u <= 0) return 20;
-  if (u > 10) return 0;
-  // Series approximation
-  let W = -0.5772 - Math.log(u);
-  let term = u;
-  for (let n = 1; n <= 20; n++) {
-    W += (n % 2 === 1 ? -1 : 1) * term / (n * factorial(n));
-    term *= u;
-  }
-  return Math.max(0, W);
-};
-
-const factorial = (n: number): number => {
-  let f = 1;
-  for (let i = 2; i <= n; i++) f *= i;
-  return f;
-};
-
 const TheisWellCalculator = ({ onClose }: Props) => {
-  const [Q, setQ] = useState(500); // m³/day
-  const [T, setT] = useState(500); // m²/day
+  const [Q, setQ] = useState(500);
+  const [T, setT] = useState(500);
   const [S, setS] = useState(0.001);
-  const [time, setTime] = useState(1); // days
-  const [obsR, setObsR] = useState(100); // m
+  const [time, setTime] = useState(1);
+  const [obsR, setObsR] = useState(100);
 
-  const drawdownAtR = useMemo(() => {
-    const u = (obsR * obsR * S) / (4 * T * time);
-    const W = wellFunction(u);
-    return (Q / (4 * Math.PI * T)) * W;
-  }, [Q, T, S, time, obsR]);
+  const { s: drawdownAtR } = useMemo(() => computeDrawdown(Q, T, S, obsR, time), [Q, T, S, time, obsR]);
 
-  // Cross-section drawdown data
-  const crossSectionData = useMemo(() => {
-    const data = [];
-    for (let r = 1; r <= 2000; r += (r < 100 ? 5 : r < 500 ? 20 : 50)) {
-      const u = (r * r * S) / (4 * T * time);
-      const W = wellFunction(u);
-      const s = (Q / (4 * Math.PI * T)) * W;
-      data.push({ r, s: +s.toFixed(3), negS: +(-s).toFixed(3) });
-    }
-    return data;
-  }, [Q, T, S, time]);
+  const crossSectionData = useMemo(() => generateDrawdownProfile(Q, T, S, time), [Q, T, S, time]);
 
-  // W(u) curve
-  const wuData = useMemo(() => {
-    const data = [];
-    for (let logU = -6; logU <= 2; logU += 0.2) {
-      const u = Math.pow(10, logU);
-      const W = wellFunction(u);
-      data.push({ u: +u.toExponential(2), W: +W.toFixed(4), logU: +logU.toFixed(1) });
-    }
-    return data;
-  }, []);
+  const wuData = useMemo(() => generateWellFunctionCurve(), []);
 
-  // Drawdown table at standard distances
   const tableDistances = [10, 50, 100, 200, 500, 1000];
   const tableData = useMemo(() => {
     return tableDistances.map(r => {
-      const u = (r * r * S) / (4 * T * time);
-      const W = wellFunction(u);
-      const s = (Q / (4 * Math.PI * T)) * W;
-      return { r, u: u.toExponential(2), W: W.toFixed(4), s: s.toFixed(3) };
+      const result = computeDrawdown(Q, T, S, r, time);
+      return { r, u: result.u.toExponential(2), W: result.W.toFixed(4), s: result.s.toFixed(3) };
     });
   }, [Q, T, S, time]);
 
