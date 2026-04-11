@@ -1,4 +1,42 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
+const MODULE_ROUTES: Record<string, string> = {
+  "CN Calculator": "cn-calculator",
+  "Unit Hydrograph": "unit-hydrograph",
+  "Rational Method": "rational-method",
+  "Flood Frequency": "flood-frequency",
+  "Muskingum Routing": "muskingum-routing",
+  "Manning Rating": "manning-rating",
+  "Specific Energy": "specific-energy",
+  "GVF Profiles": "gvf-profiles",
+  "Froude Explorer": "froude-explorer",
+  "Culvert Analyzer": "culvert-hydraulics",
+  "Saint-Venant": "saint-venant",
+  "Wave Propagation": "wave-propagation",
+  "Vedernikov Roll Wave": "vedernikov",
+  "Groundwater Sim": "groundwater",
+  "Theis Well": "theis-well",
+  "Baseflow Recession": "baseflow-recession",
+  "GW Recharge": "gw-recharge",
+  "Channel Design": "channel-design",
+  "Tractive Force": "tractive-force",
+  "Lane's Balance": "lanes-balance",
+  "Channel Class.": "channel-classification",
+  "Sediment Transport": "sediment-transport",
+  "Form Friction": "form-friction",
+  "Albedo & Energy": "albedo",
+  "ET Calculator": "et-calculator",
+  "Water Balance": "catchment-water-balance",
+  "Eco Tracker": "hydroecology",
+  "Env. Flow": "environmental-flow",
+  "Spillway Design": "spillway-design",
+  "Stilling Basin": "stilling-basin",
+  "SWMM Calculator": "swmm-calculator",
+  "Workflow Builder": "workflow-builder",
+  "Nutshells Graph": "nutshells-graph",
+  "Video Companion": "video-lectures",
+};
 
 const MODULES = [
   { id: "eng", label: "Engineering Hydrology", count: 5, icon: "⚡", color: "#0ea5e9", items: ["CN Calculator", "Unit Hydrograph", "Rational Method", "Flood Frequency", "Muskingum Routing"] },
@@ -16,15 +54,14 @@ const MODULES = [
 
 const TOTAL = MODULES.reduce((s, m) => s + m.count, 0);
 
-// Animated counter
-function Counter({ end, duration = 1800, suffix = "" }) {
+function Counter({ end, duration = 1800, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
   const [val, setVal] = useState(0);
-  const ref = useRef(null);
+  const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
         const start = performance.now();
-        const tick = (now) => {
+        const tick = (now: number) => {
           const t = Math.min((now - start) / duration, 1);
           const ease = 1 - Math.pow(1 - t, 3);
           setVal(Math.round(ease * end));
@@ -40,14 +77,14 @@ function Counter({ end, duration = 1800, suffix = "" }) {
   return <span ref={ref}>{val}{suffix}</span>;
 }
 
-// Rain drops in hero
 function RainCanvas() {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = canvasRef.current;
     if (!c) return;
     const ctx = c.getContext("2d");
-    let raf;
+    if (!ctx) return;
+    let raf: number;
     const drops = Array.from({ length: 60 }, () => ({
       x: Math.random() * 1400,
       y: Math.random() * 700,
@@ -76,7 +113,8 @@ function RainCanvas() {
 }
 
 export default function PonceHydrologyLab() {
-  const [activeDomain, setActiveDomain] = useState(null);
+  const navigate = useNavigate();
+  const [activeDomain, setActiveDomain] = useState<string | null>(null);
   const [dark, setDark] = useState(true);
   const [scrollY, setScrollY] = useState(0);
 
@@ -85,6 +123,11 @@ export default function PonceHydrologyLab() {
     window.addEventListener("scroll", h, { passive: true });
     return () => window.removeEventListener("scroll", h);
   }, []);
+
+  const goToModule = (name: string) => {
+    const route = MODULE_ROUTES[name];
+    if (route) navigate(`/modules/${route}`);
+  };
 
   const bg = dark ? "#0a1628" : "#f0f7fc";
   const fg = dark ? "#e2edf8" : "#1a2a3a";
@@ -99,8 +142,6 @@ export default function PonceHydrologyLab() {
     <div style={{ background: bg, color: fg, minHeight: "100vh", fontFamily: "'Instrument Serif', 'Georgia', serif", transition: "background 0.4s, color 0.4s" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
         .fade-up { opacity: 0; transform: translateY(30px); animation: fadeUp 0.7s ease forwards; }
         .fade-up-d1 { animation-delay: 0.15s; }
         .fade-up-d2 { animation-delay: 0.3s; }
@@ -118,7 +159,7 @@ export default function PonceHydrologyLab() {
         @keyframes waveDrift { 0%,100% { d: path("M0,40 Q175,10 350,35 T700,30 L700,80 L0,80 Z"); } 50% { d: path("M0,35 Q175,50 350,25 T700,40 L700,80 L0,80 Z"); } }
       `}</style>
 
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
         background: scrollY > 60 ? (dark ? "rgba(10,22,40,0.92)" : "rgba(240,247,252,0.92)") : "transparent",
@@ -128,7 +169,7 @@ export default function PonceHydrologyLab() {
         padding: "0 clamp(16px, 4vw, 48px)",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => navigate("/")}>
             <svg width="28" height="28" viewBox="0 0 28 28">
               <circle cx="14" cy="14" r="12" fill="none" stroke="#38bdf8" strokeWidth="1.5" opacity="0.5" />
               <path d="M14 6 C14 6, 8 14, 8 18 C8 21.3 10.7 24 14 24 C17.3 24 20 21.3 20 18 C20 14 14 6 14 6Z" fill="#38bdf8" opacity="0.8" />
@@ -138,6 +179,7 @@ export default function PonceHydrologyLab() {
           <div style={{ display: "flex", alignItems: "center", gap: 24, fontFamily: "'DM Sans', sans-serif", fontSize: 13.5, fontWeight: 500, letterSpacing: "0.02em" }}>
             <a href="#modules" style={{ color: muted, textDecoration: "none", transition: "color 0.2s" }}>Modules</a>
             <a href="#domains" style={{ color: muted, textDecoration: "none", transition: "color 0.2s" }}>Domains</a>
+            <span onClick={() => navigate("/")} style={{ color: muted, textDecoration: "none", cursor: "pointer" }}>Classic View</span>
             <a href="https://ponce.sdsu.edu" target="_blank" rel="noreferrer" style={{ color: muted, textDecoration: "none" }}>Source ↗</a>
             <button onClick={() => setDark(!dark)} style={{
               background: dark ? "rgba(56,189,248,0.12)" : "rgba(0,80,160,0.08)",
@@ -151,7 +193,7 @@ export default function PonceHydrologyLab() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <header style={{
         position: "relative", overflow: "hidden",
         background: heroGrad,
@@ -160,7 +202,6 @@ export default function PonceHydrologyLab() {
         padding: "100px clamp(20px, 5vw, 60px) 80px",
       }}>
         <RainCanvas />
-        {/* Floating water drops */}
         {[0,1,2,3,4].map(i => (
           <svg key={i} width="24" height="24" viewBox="0 0 24 24" style={{
             position: "absolute",
@@ -173,83 +214,54 @@ export default function PonceHydrologyLab() {
 
         <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 780 }}>
           <div className="fade-up" style={{
-            display: "inline-block",
-            padding: "6px 18px",
-            borderRadius: 99,
-            background: "rgba(56,189,248,0.12)",
-            border: "1px solid rgba(56,189,248,0.2)",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12.5,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#7dd3fc",
-            marginBottom: 32,
+            display: "inline-block", padding: "6px 18px", borderRadius: 99,
+            background: "rgba(56,189,248,0.12)", border: "1px solid rgba(56,189,248,0.2)",
+            fontFamily: "'DM Sans', sans-serif", fontSize: 12.5, fontWeight: 600,
+            letterSpacing: "0.08em", textTransform: "uppercase", color: "#7dd3fc", marginBottom: 32,
           }}>
             Interactive Hydrology Education
           </div>
 
           <h1 className="fade-up fade-up-d1" style={{
-            fontSize: "clamp(42px, 7vw, 82px)",
-            fontWeight: 400,
-            lineHeight: 1.05,
-            letterSpacing: "-0.03em",
-            color: "#f0f9ff",
-            marginBottom: 12,
+            fontSize: "clamp(42px, 7vw, 82px)", fontWeight: 400, lineHeight: 1.05,
+            letterSpacing: "-0.03em", color: "#f0f9ff", marginBottom: 12,
           }}>
             Ponce Hydrology
           </h1>
           <h1 className="fade-up fade-up-d1" style={{
-            fontSize: "clamp(42px, 7vw, 82px)",
-            fontWeight: 400,
-            fontStyle: "italic",
-            lineHeight: 1.05,
-            letterSpacing: "-0.02em",
-            marginBottom: 32,
+            fontSize: "clamp(42px, 7vw, 82px)", fontWeight: 400, fontStyle: "italic",
+            lineHeight: 1.05, letterSpacing: "-0.02em", marginBottom: 32,
             background: "linear-gradient(90deg, #38bdf8, #67e8f9, #a5f3fc, #67e8f9, #38bdf8)",
             backgroundSize: "200% auto",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             animation: "shimmer 4s linear infinite",
           }}>
             Lab
           </h1>
 
           <p className="fade-up fade-up-d2" style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "clamp(15px, 2vw, 18px)",
-            lineHeight: 1.7,
-            color: "rgba(186,220,248,0.75)",
-            maxWidth: 540,
-            margin: "0 auto 40px",
+            fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(15px, 2vw, 18px)",
+            lineHeight: 1.7, color: "rgba(186,220,248,0.75)", maxWidth: 540, margin: "0 auto 40px",
           }}>
             Explore the science of water through interactive calculators, simulators, and visualizations — based on the work of <span style={{ color: "#7dd3fc", fontWeight: 500 }}>Prof. Victor Miguel Ponce</span> at San Diego State University.
           </p>
 
           <div className="fade-up fade-up-d3" style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="#domains" style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14.5, fontWeight: 600,
-              padding: "13px 32px",
-              borderRadius: 99,
+              fontFamily: "'DM Sans', sans-serif", fontSize: 14.5, fontWeight: 600,
+              padding: "13px 32px", borderRadius: 99,
               background: "linear-gradient(135deg, #0ea5e9, #06b6d4)",
-              color: "#fff",
-              textDecoration: "none",
+              color: "#fff", textDecoration: "none",
               boxShadow: "0 4px 20px rgba(14,165,233,0.35)",
               transition: "transform 0.2s, box-shadow 0.2s",
             }}>
               Explore {TOTAL} Modules →
             </a>
             <a href="https://ponce.sdsu.edu" target="_blank" rel="noreferrer" style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14.5, fontWeight: 500,
-              padding: "13px 28px",
-              borderRadius: 99,
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              color: "#bae6fd",
-              textDecoration: "none",
-              backdropFilter: "blur(8px)",
+              fontFamily: "'DM Sans', sans-serif", fontSize: 14.5, fontWeight: 500,
+              padding: "13px 28px", borderRadius: 99,
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)",
+              color: "#bae6fd", textDecoration: "none", backdropFilter: "blur(8px)",
               transition: "background 0.2s",
             }}>
               Learn More
@@ -257,13 +269,12 @@ export default function PonceHydrologyLab() {
           </div>
         </div>
 
-        {/* Animated wave bottom */}
         <svg viewBox="0 0 700 80" preserveAspectRatio="none" style={{ position: "absolute", bottom: -1, left: 0, right: 0, width: "100%", height: 80 }}>
           <path className="wave-path" d="M0,40 Q175,10 350,35 T700,30 L700,80 L0,80 Z" fill={bg} />
         </svg>
       </header>
 
-      {/* ── STATS BAR ── */}
+      {/* STATS */}
       <section id="modules" style={{ padding: "60px clamp(20px, 5vw, 60px)", maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 20 }}>
           {[
@@ -286,7 +297,7 @@ export default function PonceHydrologyLab() {
         </div>
       </section>
 
-      {/* ── DOMAINS PERIODIC TABLE ── */}
+      {/* DOMAINS */}
       <section id="domains" style={{ padding: "40px clamp(20px, 5vw, 60px) 80px", maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 400, letterSpacing: "-0.02em", marginBottom: 12 }}>
@@ -297,20 +308,16 @@ export default function PonceHydrologyLab() {
           </p>
         </div>
 
-        {/* Domain pills */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>
           {MODULES.map(m => {
             const active = activeDomain === m.id;
             return (
               <button key={m.id} className="domain-pill" onClick={() => setActiveDomain(active ? null : m.id)} style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 13, fontWeight: 600,
-                padding: "8px 16px",
-                borderRadius: 99,
+                fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600,
+                padding: "8px 16px", borderRadius: 99,
                 border: `1.5px solid ${active ? m.color : border}`,
                 background: active ? `${m.color}18` : cardBg,
-                color: active ? m.color : fg,
-                cursor: "pointer",
+                color: active ? m.color : fg, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 7,
               }}>
                 <span style={{ fontSize: 15 }}>{m.icon}</span>
@@ -318,8 +325,7 @@ export default function PonceHydrologyLab() {
                 <span style={{
                   background: active ? m.color : (dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"),
                   color: active ? "#fff" : muted,
-                  fontSize: 11, fontWeight: 700,
-                  padding: "2px 7px", borderRadius: 99,
+                  fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 99,
                   transition: "all 0.2s",
                 }}>{m.count}</span>
               </button>
@@ -327,9 +333,8 @@ export default function PonceHydrologyLab() {
           })}
         </div>
 
-        {/* Expanded domain detail */}
         {activeDomain && (() => {
-          const m = MODULES.find(d => d.id === activeDomain);
+          const m = MODULES.find(d => d.id === activeDomain)!;
           return (
             <div style={{
               background: cardBg, border: `1px solid ${m.color}30`, borderRadius: 20,
@@ -342,15 +347,12 @@ export default function PonceHydrologyLab() {
               </h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {m.items.map((item, i) => (
-                  <span key={i} className="module-chip" style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 13.5, fontWeight: 500,
-                    padding: "10px 18px",
-                    borderRadius: 12,
+                  <span key={i} className="module-chip" onClick={() => goToModule(item)} style={{
+                    fontFamily: "'DM Sans', sans-serif", fontSize: 13.5, fontWeight: 500,
+                    padding: "10px 18px", borderRadius: 12,
                     background: dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
                     border: `1px solid ${dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
-                    cursor: "pointer",
-                    color: fg,
+                    cursor: "pointer", color: fg,
                   }}>
                     {item}
                   </span>
@@ -360,14 +362,12 @@ export default function PonceHydrologyLab() {
           );
         })()}
 
-        {/* Domain grid cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
           {MODULES.map(m => (
             <button key={m.id} className="stat-card" onClick={() => setActiveDomain(activeDomain === m.id ? null : m.id)} style={{
               background: activeDomain === m.id ? `${m.color}10` : cardBg,
               border: `1px solid ${activeDomain === m.id ? `${m.color}40` : border}`,
-              borderRadius: 16, padding: "22px 20px",
-              textAlign: "left", cursor: "pointer",
+              borderRadius: 16, padding: "22px 20px", textAlign: "left", cursor: "pointer",
               boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.2)" : "0 2px 12px rgba(0,40,100,0.04)",
               transition: "all 0.25s ease",
             }}>
@@ -375,22 +375,20 @@ export default function PonceHydrologyLab() {
                 <span style={{ fontSize: 26 }}>{m.icon}</span>
                 <span style={{
                   fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700,
-                  background: `${m.color}18`, color: m.color,
-                  padding: "3px 9px", borderRadius: 99,
+                  background: `${m.color}18`, color: m.color, padding: "3px 9px", borderRadius: 99,
                 }}>{m.count} tools</span>
               </div>
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{m.label}</div>
               <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: muted, lineHeight: 1.5 }}>
                 {m.items.slice(0, 3).join(" · ")}{m.items.length > 3 ? " …" : ""}
               </div>
-              {/* Color accent bar */}
               <div style={{ marginTop: 14, height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${m.color}, transparent)`, opacity: activeDomain === m.id ? 1 : 0.3, transition: "opacity 0.3s" }} />
             </button>
           ))}
         </div>
       </section>
 
-      {/* ── LEARNING PATHS ── */}
+      {/* LEARNING PATHS */}
       <section style={{ padding: "60px clamp(20px, 5vw, 60px) 80px", maxWidth: 1200, margin: "0 auto" }}>
         <h2 style={{ fontSize: "clamp(26px, 3.5vw, 38px)", fontWeight: 400, letterSpacing: "-0.02em", textAlign: "center", marginBottom: 40 }}>
           Guided Learning <span style={{ fontStyle: "italic", color: "#38bdf8" }}>Paths</span>
@@ -414,16 +412,13 @@ export default function PonceHydrologyLab() {
               }}>{p.tag}</span>
               <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 26, fontWeight: 400, marginTop: 8, marginBottom: 10 }}>{p.title}</h3>
               <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, lineHeight: 1.65, color: muted, marginBottom: 16 }}>{p.desc}</p>
-              <span style={{
-                fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
-                color: p.accent,
-              }}>{p.modules} →</span>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600, color: p.accent }}>{p.modules} →</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer style={{
         borderTop: `1px solid ${border}`,
         padding: "40px clamp(20px, 5vw, 60px)",
