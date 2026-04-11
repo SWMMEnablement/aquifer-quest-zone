@@ -39,7 +39,7 @@ const moduleComponents: Record<string, React.LazyExoticComponent<React.Component
   "nutshells-graph": lazy(() => import("@/components/NutshellsGraph")),
   "video-lectures": lazy(() => import("@/components/VideoLectureCompanion")),
   "swmm-calculator": lazy(() => import("@/components/SWMMCalculator")),
-  "cn-comparison": lazy(() => import("@/components/CNMethodComparison")),
+  
 };
 
 const LoadingFallback = () => (
