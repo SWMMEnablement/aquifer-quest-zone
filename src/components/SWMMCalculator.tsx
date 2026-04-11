@@ -30,17 +30,11 @@ function GutterFlow() {
   const [gutterW, setGutterW] = useState(0.6);
   const [Q, setQ] = useState(0.05);
 
-  // Izzard's modified Manning for composite gutter
-  const spread = useMemo(() => {
-    // Simplified: T = (Q*n/(0.376*Sx^(5/3)*slope^0.5))^(3/8)
-    const T = Math.pow((Q * n) / (0.376 * Math.pow(Sx, 5/3) * Math.pow(slope, 0.5)), 3/8);
-    return isFinite(T) ? T : 0;
-  }, [Q, n, Sx, slope]);
+  const gutter = useMemo(() =>
+    computeGutterFlow(Q, n, Sx, Sw, slope, gutterW),
+    [Q, n, Sx, Sw, slope, gutterW]);
 
-  const depth = spread * Sx;
-  const gutterDepth = depth + gutterW * (Sw - Sx);
-  const velocity = spread > 0 ? Q / (0.5 * spread * depth) : 0;
-  const flowArea = 0.5 * spread * depth;
+  const { spread, depth, gutterDepth, velocity, flowArea } = gutter;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -171,31 +165,11 @@ function InletDesign() {
   const [grateWidth, setGrateWidth] = useState(0.6);
   const [clogging, setClogging] = useState(0);
 
-  // Simplified inlet interception
   const results = useMemo(() => {
-    const n = 0.016;
-    const T = Math.pow((Q * n) / (0.376 * Math.pow(Sx, 5/3) * Math.pow(slope, 0.5)), 3/8);
-    const V = T > 0 ? Q / (0.5 * T * T * Sx) : 0;
-    const depth = T * Sx;
-
     if (inletType === "grate") {
-      // Frontal flow ratio
-      const Eo = grateWidth > 0 ? 1 - Math.pow(1 - grateWidth / Math.max(T, 0.01), 2.67) : 0;
-      // Frontal flow interception
-      const Vo = 0.9; // splash-over velocity approximation
-      const Rf = V > Vo ? 1 - 0.09 * (V - Vo) : 1;
-      // Side flow interception
-      const Rs = 1 / (1 + 0.15 * Math.pow(V, 1.8) / (Sx * Math.pow(grateLength * (1 - clogging/100), 2.3)));
-      const E = Math.min(Math.max(Rf * Eo + Rs * (1 - Eo), 0), 1);
-      const Qi = E * Q;
-      return { T, V, depth, E, Qi, bypass: Q - Qi, Eo, Rf, Rs, type: "Grate" as const };
+      return computeGrateInlet(Q, slope, Sx, grateLength, grateWidth, clogging);
     } else {
-      // Curb-opening: LT = 0.6 Q^0.42 S^0.3 (1/(n*Sx))^0.6
-      const LT = 0.6 * Math.pow(Q, 0.42) * Math.pow(slope, 0.3) * Math.pow(1/(n * Sx), 0.6);
-      const Lc = grateLength; // using grateLength as curb length
-      const E = Lc >= LT ? 1 : 1 - Math.pow(1 - Lc / LT, 1.8);
-      const Qi = E * Q;
-      return { T, V, depth, E, Qi, bypass: Q - Qi, LT, Lc, type: "Curb" as const };
+      return computeCurbInlet(Q, slope, Sx, grateLength);
     }
   }, [Q, slope, Sx, grateLength, grateWidth, clogging, inletType]);
 
@@ -384,37 +358,9 @@ function PipeFlow() {
   const [roughness, setRoughness] = useState(0.013);
   const [depth, setDepth] = useState(0.3);
 
-  const results = useMemo(() => {
-    const r = diameter / 2;
-    const dRatio = Math.min(depth / diameter, 0.99);
-    // Circular geometry
-    const theta = 2 * Math.acos(1 - 2 * dRatio); // central angle
-    const A = (r * r / 2) * (theta - Math.sin(theta));
-    const P = r * theta;
-    const R = P > 0 ? A / P : 0;
-    const Tw = diameter * Math.sin(theta / 2);
-
-    let V = 0, Q = 0;
-    if (method === "manning") {
-      V = (1 / roughness) * Math.pow(R, 2/3) * Math.pow(slope, 0.5);
-    } else if (method === "hazen-williams") {
-      const C = 1 / roughness * 10; // approximate
-      V = 0.849 * C * Math.pow(R, 0.63) * Math.pow(slope, 0.54);
-    }
-    Q = V * A;
-
-    // Critical depth (approximate for circular)
-    const yc = Math.pow(Q * Q / (9.81 * Tw * Tw * A), 1/3) || 0;
-    const Fr = Tw > 0 ? V / Math.sqrt(9.81 * A / Tw) : 0;
-
-    // Full pipe capacity
-    const Afull = Math.PI * r * r;
-    const Rfull = r / 2;
-    const Vfull = (1 / roughness) * Math.pow(Rfull, 2/3) * Math.pow(slope, 0.5);
-    const Qfull = Vfull * Afull;
-
-    return { A, P, R, V, Q, Tw, yc, Fr, Qfull, percentFull: dRatio * 100, theta };
-  }, [method, diameter, slope, roughness, depth]);
+  const results = useMemo(() =>
+    computePipeFlow(method as "manning" | "hazen-williams", diameter, slope, roughness, depth),
+    [method, diameter, slope, roughness, depth]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -548,34 +494,9 @@ function WeirOrifice() {
   const [angle, setAngle] = useState(90);
   const [orificeDia, setOrificeDia] = useState(0.5);
 
-  const results = useMemo(() => {
-    const H = Math.max(headwater - crest, 0);
-    const Ht = Math.max(tailwater - crest, 0);
-    const subRatio = Ht > 0 && H > 0 ? Ht / H : 0;
-    const subFactor = subRatio > 0.67 ? Math.pow(1 - Math.pow(subRatio, 1.5), 0.385) : 1;
-
-    let Q = 0, formula = "";
-    if (type === "rect-weir") {
-      Q = Cd * length * Math.pow(H, 1.5) * subFactor;
-      formula = `Q = Cd × L × H^(3/2) = ${Cd} × ${length} × ${H.toFixed(2)}^1.5`;
-    } else if (type === "v-notch") {
-      const theta = angle * Math.PI / 180;
-      Q = (8/15) * 0.58 * Math.sqrt(2 * 9.81) * Math.tan(theta/2) * Math.pow(H, 2.5) * subFactor;
-      formula = `Q = (8/15)Cd√(2g)tan(θ/2)H^(5/2)`;
-    } else if (type === "broad-crest") {
-      Q = Cd * length * Math.pow(H, 1.5) * subFactor;
-      formula = `Q = Cd × L × H^(3/2)`;
-    } else if (type === "orifice") {
-      const Ao = Math.PI * orificeDia * orificeDia / 4;
-      const Heff = headwater - (crest - orificeDia/2);
-      Q = 0.61 * Ao * Math.sqrt(2 * 9.81 * Math.max(Heff, 0));
-      formula = `Q = Cd × A × √(2gH)`;
-    }
-
-    const A = type === "orifice" ? Math.PI * orificeDia * orificeDia / 4 : length * H;
-    const V = A > 0 ? Q / A : 0;
-    return { Q, H, Ht, subRatio, subFactor, V, A, formula };
-  }, [type, headwater, crest, tailwater, length, Cd, angle, orificeDia]);
+  const results = useMemo(() =>
+    computeWeirOrifice(type as StructureType, headwater, crest, tailwater, length, Cd, angle, orificeDia),
+    [type, headwater, crest, tailwater, length, Cd, angle, orificeDia]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -726,19 +647,9 @@ function WaterHammer() {
   const [Kw, setKw] = useState(2.2e9); // water bulk modulus
   const [Ep, setEp] = useState(200e9); // pipe elasticity (steel)
 
-  const results = useMemo(() => {
-    // Wave speed: a = sqrt(Kw/ρ / (1 + Kw*D/(Ep*e)))
-    const rho = 998;
-    const a = Math.sqrt((Kw / rho) / (1 + (Kw * diameter) / (Ep * thickness)));
-    // Critical time
-    const tc = 2 * pipeLength / a;
-    const isRapid = closureTime < tc;
-    // Joukowski pressure rise
-    const dP = isRapid ? rho * a * V0 : rho * a * V0 * (tc / closureTime);
-    const dH = dP / (rho * 9.81);
-
-    return { a, tc, isRapid, dP, dH, dPbar: dP / 1e5 };
-  }, [pipeLength, diameter, thickness, V0, closureTime, Kw, Ep]);
+  const results = useMemo(() =>
+    computeWaterHammer(pipeLength, diameter, thickness, V0, closureTime, Kw, Ep),
+    [pipeLength, diameter, thickness, V0, closureTime, Kw, Ep]);
 
   const pipeMaterial = Ep > 100e9 ? "Steel" : Ep > 2e9 ? "Cast Iron" : "PVC";
 
@@ -886,33 +797,11 @@ function PumpCurves() {
   const [N, setN] = useState(1750);
   const [N2, setN2] = useState(1500);
 
-  // Generate pump curve points (parabolic approximation)
-  const pumpCurve = useMemo(() => {
-    const points: { Q: number; H: number; eff: number; P: number }[] = [];
-    for (let i = 0; i <= 20; i++) {
-      const q = (i / 20) * Qrated * 1.4;
-      const qr = q / Qrated;
-      const H = Hshutoff - (Hshutoff - Hrated) * qr * qr;
-      const eff = qr > 0 ? Math.max(4 * qr * (1 - 0.5 * qr) * 0.82, 0) : 0;
-      const P = q > 0 ? (998 * 9.81 * q * H) / (eff > 0 ? eff : 0.01) / 1000 : 0;
-      points.push({ Q: q, H: Math.max(H, 0), eff, P });
-    }
-    return points;
-  }, [Qrated, Hrated, Hshutoff]);
+  const pumpCurve = useMemo(() => generatePumpCurve(Qrated, Hrated, Hshutoff), [Qrated, Hrated, Hshutoff]);
 
-  // Affinity law curve at N2
-  const affinityCurve = useMemo(() => {
-    const ratio = N2 / N;
-    return pumpCurve.map(p => ({
-      Q: p.Q * ratio,
-      H: p.H * ratio * ratio,
-      eff: p.eff,
-      P: p.P * ratio * ratio * ratio,
-    }));
-  }, [pumpCurve, N, N2]);
+  const affinityCurve = useMemo(() => applyAffinityLaws(pumpCurve, N, N2), [pumpCurve, N, N2]);
 
-  // Specific speed
-  const Ns = N * Math.sqrt(Qrated * 1000) / Math.pow(Hrated, 0.75);
+  const Ns = computeSpecificSpeed(N, Qrated, Hrated);
 
   const maxQ = Qrated * 1.5;
   const maxH = Hshutoff * 1.2;
