@@ -53,7 +53,7 @@
 
 ### Key Statistics
 - **33 interactive module components** totaling ~11,750 lines of code
-- **3 extracted calculation libraries** with unit tests
+- **12 extracted calculation libraries** with 125 unit tests across 11 test suites
 - **11 domain categories** with periodic-table-style organization
 - **6 color themes** for institutional branding
 
@@ -79,7 +79,7 @@
 - **No global state:** Each module manages its own state independently via React hooks.
 - **URL-based module routing:** Each module has its own route (`/modules/:moduleId`) via `ModulePage.tsx`, enabling deep-linking and sharing.
 - **Domain-grouped catalog:** Modules are organized into 11 scientific domains with a periodic-table-style layout.
-- **Extracted calculation libraries:** Core scientific formulas for CN method, Muskingum routing, and Saint-Venant equations are in testable `src/lib/hydrology/` modules.
+- **Extracted calculation libraries:** All core scientific formulas are in testable `src/lib/hydrology/` modules (12 files, 125 unit tests). UI components import from these libraries.
 
 ---
 
@@ -177,13 +177,30 @@ src/
 ├── lib/
 │   ├── utils.ts                          # cn() utility for className merging
 │   └── hydrology/
-│       ├── cn-method.ts       (11,431 B) # Extracted CN calculation logic
-│       ├── muskingum.ts       (9,100 B)  # Extracted Muskingum routing logic
-│       ├── saint-venant.ts    (10,826 B) # Extracted Saint-Venant wave equations
+│       ├── cn-method.ts              (11,431 B) # SCS Curve Number lookup & runoff
+│       ├── muskingum.ts              (9,100 B)  # Muskingum-Cunge flood routing
+│       ├── saint-venant.ts           (10,826 B) # Saint-Venant wave equations
+│       ├── open-channel.ts           (9,932 B)  # Manning, Froude, specific energy, GVF
+│       ├── swmm.ts                   (9,689 B)  # Urban stormwater (gutter, inlet, pipe, weir, pump, detention)
+│       ├── stable-channel.ts         (8,309 B)  # Tractive force & stable channel design
+│       ├── groundwater.ts            (7,034 B)  # Theis well, aquifer simulation, recharge
+│       ├── water-balance.ts          (5,754 B)  # Catchment balance & hydro-ecology
+│       ├── channel-classification.ts (5,465 B)  # Rosgen stream classification
+│       ├── unit-hydrograph.ts        (4,909 B)  # SCS unit hydrograph & superposition
+│       ├── energy-balance.ts         (4,537 B)  # Albedo, net radiation, ET
+│       ├── hydraulic-structures.ts   (3,381 B)  # Spillway & stilling basin design
 │       └── __tests__/
-│           ├── cn-method.test.ts         # CN method unit tests
-│           ├── muskingum.test.ts         # Muskingum routing unit tests
-│           └── saint-venant.test.ts      # Saint-Venant unit tests
+│           ├── cn-method.test.ts          (32 tests)
+│           ├── muskingum.test.ts          (20 tests)
+│           ├── saint-venant.test.ts       (15 tests)
+│           ├── open-channel.test.ts       (14 tests)
+│           ├── swmm.test.ts              (11 tests)
+│           ├── hydraulic-structures.test.ts (9 tests)
+│           ├── groundwater.test.ts        (7 tests)
+│           ├── unit-hydrograph.test.ts    (5 tests)
+│           ├── water-balance.test.ts      (5 tests)
+│           ├── stable-channel.test.ts     (4 tests)
+│           └── energy-balance.test.ts     (3 tests)
 │
 ├── test/
 │   ├── setup.ts                          # Vitest setup (jest-dom matchers)
@@ -675,31 +692,40 @@ All module state resets when navigating away.
 
 ## 11. Extracted Calculation Libraries
 
-Three core scientific calculation modules have been extracted from UI components into pure, testable TypeScript functions under `src/lib/hydrology/`:
+All scientific calculation logic has been extracted from UI components into 12 pure, testable TypeScript modules under `src/lib/hydrology/`. UI components import from these libraries — no inline calculations remain in the component layer.
 
-### cn-method.ts (11,431 bytes)
-- CN lookup tables for all soil groups and land use combinations
-- AMC adjustment formulas (AMC I, II, III)
-- SCS runoff equation: Q = (P - Ia)² / (P - Ia + S)
-- Potential retention and initial abstraction calculations
-- Green-Ampt and Horton infiltration for method comparison
+### Library Catalog
 
-### muskingum.ts (9,100 bytes)
-- Muskingum routing coefficient computation (C₁, C₂, C₃)
-- Step-by-step outflow hydrograph generation
-- Peak attenuation and translation calculations
-- Multiple inflow hydrograph shape generators
+| File | Size | Domain | Key Functions |
+|------|------|--------|---------------|
+| `cn-method.ts` | 11,431 B | Engineering Hydrology | CN lookup, AMC adjustment, SCS runoff, Green-Ampt, Horton |
+| `saint-venant.ts` | 10,826 B | Hydromechanics | Full equation term decomposition, kinematic/diffusion/dynamic waves |
+| `open-channel.ts` | 9,932 B | Open-Channel Hydraulics | Manning, Froude, specific energy/momentum, GVF profiles, wave celerity |
+| `muskingum.ts` | 9,100 B | Engineering Hydrology | Routing coefficients, outflow hydrograph, peak attenuation |
+| `swmm.ts` | 9,689 B | Urban Stormwater | Gutter flow, inlet design, pipe flow, weir/orifice, pump, detention |
+| `stable-channel.ts` | 8,309 B | Hydrogeomorphology | Tractive force, permissible velocity, stable channel geometry |
+| `groundwater.ts` | 7,034 B | Hydrogeology | Theis well function, drawdown, aquifer simulation, recharge |
+| `water-balance.ts` | 5,754 B | Hydroecology | Thornthwaite PET, catchment balance, watershed ecosystem metrics |
+| `channel-classification.ts` | 5,465 B | Hydrogeomorphology | Rosgen 7-type classification, decision tree scoring |
+| `unit-hydrograph.ts` | 4,909 B | Engineering Hydrology | SCS dimensionless UH, superposition, convolution |
+| `energy-balance.ts` | 4,537 B | Hydroclimatology | Net radiation, latent/sensible heat, Priestley-Taylor ET |
+| `hydraulic-structures.ts` | 3,381 B | Hydraulic Structures | WES ogee spillway, USBR stilling basin, sequent depth |
 
-### saint-venant.ts (10,826 bytes)
-- Full Saint-Venant equation term decomposition
-- Kinematic, diffusion, and dynamic wave approximations
-- Wave celerity calculations for each approximation level
+### Test Coverage — 125 tests across 11 suites
 
-### Test Coverage
-Each library has corresponding test files in `src/lib/hydrology/__tests__/`:
-- `cn-method.test.ts` — Verifies CN lookup, AMC adjustment, and runoff calculations
-- `muskingum.test.ts` — Verifies routing coefficients and outflow computation
-- `saint-venant.test.ts` — Verifies equation term behavior
+| Test File | Tests | What It Verifies |
+|-----------|-------|------------------|
+| `cn-method.test.ts` | 32 | CN lookup, AMC adjustment, runoff for all soil groups |
+| `muskingum.test.ts` | 20 | Routing coefficients, outflow, hydrograph shapes |
+| `saint-venant.test.ts` | 15 | Equation terms, wave approximations, celerity |
+| `open-channel.test.ts` | 14 | Manning, critical depth, Froude, GVF, energy/momentum |
+| `swmm.test.ts` | 11 | All 6 SWMM tabs: gutter, inlet, pipe, weir, pump, detention |
+| `hydraulic-structures.test.ts` | 9 | Spillway profiles, stilling basin, hydraulic jump |
+| `groundwater.test.ts` | 7 | Well function, drawdown, aquifer simulation, recharge |
+| `unit-hydrograph.test.ts` | 5 | Dimensionless UH, superposition, peak flow |
+| `water-balance.test.ts` | 5 | PET, catchment balance, watershed metrics |
+| `stable-channel.test.ts` | 4 | Tractive force, permissible velocity, geometry |
+| `energy-balance.test.ts` | 3 | Net radiation, energy partitioning, ET rate |
 
 ---
 
@@ -799,9 +825,8 @@ All CSS variables redefined in `.dark`:
 - **Commands:** `npm test` (single run), `npm run test:watch` (watch mode)
 
 ### Current Test Coverage
-- `src/lib/hydrology/__tests__/cn-method.test.ts` — CN method calculations
-- `src/lib/hydrology/__tests__/muskingum.test.ts` — Muskingum routing
-- `src/lib/hydrology/__tests__/saint-venant.test.ts` — Saint-Venant equations
+- **125 unit tests** across 11 test suites in `src/lib/hydrology/__tests__/`
+- Covers all 12 extracted calculation libraries (see §11 for full breakdown)
 - `src/test/example.test.ts` — Basic example/placeholder
 
 ### Recommended Test Additions
@@ -817,9 +842,9 @@ All CSS variables redefined in `.dark`:
 
 ### Architecture
 1. **Module component sizes vary widely** — From 85 lines (SpillwayDesigner) to 1,068 lines (SWMMCalculator). Larger modules would benefit from sub-component extraction.
-2. **Only 3 of 33 modules have extracted calculation logic** — The remaining modules have calculations inline in the component.
+2. ~~**Only 3 of 33 modules have extracted calculation logic**~~ ✅ **Complete** — All 12 calculation libraries extracted; UI components import from `src/lib/hydrology/`.
 3. **No data persistence** — Users lose work on navigation. SessionStorage or context could preserve state.
-4. **No lazy loading** — All 33 module components loaded upfront. `React.lazy()` + `Suspense` would improve initial load.
+4. ~~**No lazy loading**~~ ✅ **Complete** — All 37 module components use `React.lazy()` + `Suspense` in `ModulePage.tsx`.
 
 ### Content Accuracy
 - All models are **simplified/conceptual** for educational use
