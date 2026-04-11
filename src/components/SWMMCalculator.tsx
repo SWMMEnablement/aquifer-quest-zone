@@ -5,6 +5,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import {
+  computeGutterFlow,
+  computeGrateInlet,
+  computeCurbInlet,
+  computePipeFlow,
+  computeWeirOrifice,
+  computeWaterHammer,
+  generatePumpCurve,
+  applyAffinityLaws,
+  computeSpecificSpeed,
+  classifyPumpType,
+  type StructureType,
+} from "@/lib/hydrology/swmm";
 
 interface Props { onClose: () => void; }
 
