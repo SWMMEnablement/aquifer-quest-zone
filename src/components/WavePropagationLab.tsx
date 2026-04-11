@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, RotateCcw, ExternalLink } from "lucide-react";
+import { computeWaveCelerity } from "@/lib/hydrology/open-channel";
 
 interface Props { onClose: () => void; }
 const g = 9.81;
@@ -16,14 +17,7 @@ const WavePropagationLab = ({ onClose }: Props) => {
   const [time, setTime] = useState(0);
   const animRef = useRef<number>();
 
-  const R = depth; // wide channel approximation
-  const V = (1 / manningN) * Math.pow(R, 2 / 3) * Math.pow(slope, 0.5);
-  const Fr = V / Math.sqrt(g * depth);
-  const beta = 5 / 3; // Manning
-  const ck = beta * V; // kinematic celerity
-  const cd_plus = V + Math.sqrt(g * depth); // dynamic downstream
-  const cd_minus = V - Math.sqrt(g * depth); // dynamic upstream
-  const Ved = (beta - 1) * Fr; // Vedernikov number
+  const { V, Fr, ck, cd_plus, cd_minus, Ved } = computeWaveCelerity(depth, manningN, slope);
 
   useEffect(() => {
     if (playing) {
