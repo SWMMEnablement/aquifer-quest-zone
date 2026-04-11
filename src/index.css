@@ -121,76 +121,77 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* ── University & Agency Themes ── */
-  .theme-sdsu {
-    --primary: 0 100% 30%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 100%;
-    --water-deep: 0 80% 25%;
-    --water-medium: 0 70% 40%;
-    --water-light: 0 60% 60%;
-    --gradient-water: linear-gradient(135deg, hsl(0 100% 30%), hsl(0 80% 45%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 100% 18%) 0%, hsl(0 80% 30%) 50%, hsl(0 70% 42%) 100%);
-    --shadow-water: 0 10px 40px -10px hsl(0 100% 30% / 0.25);
-    --ring: 0 100% 30%;
-  }
+}
 
-  .theme-uf {
-    --primary: 24 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 220 100% 30%;
-    --accent-foreground: 0 0% 100%;
-    --water-deep: 220 80% 25%;
-    --water-medium: 24 90% 50%;
-    --water-light: 24 80% 65%;
-    --gradient-water: linear-gradient(135deg, hsl(24 100% 50%), hsl(220 100% 30%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 100% 15%) 0%, hsl(24 90% 40%) 50%, hsl(24 100% 50%) 100%);
-    --shadow-water: 0 10px 40px -10px hsl(24 100% 50% / 0.25);
-    --ring: 24 100% 50%;
-  }
+/* ── University & Agency Themes (outside @layer for proper override) ── */
+.theme-sdsu {
+  --primary: 0 100% 30%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 100%;
+  --water-deep: 0 80% 25%;
+  --water-medium: 0 70% 40%;
+  --water-light: 0 60% 60%;
+  --gradient-water: linear-gradient(135deg, hsl(0 100% 30%), hsl(0 80% 45%));
+  --gradient-hero: linear-gradient(135deg, hsl(0 100% 18%) 0%, hsl(0 80% 30%) 50%, hsl(0 70% 42%) 100%);
+  --shadow-water: 0 10px 40px -10px hsl(0 100% 30% / 0.25);
+  --ring: 0 100% 30%;
+}
 
-  .theme-osu {
-    --primary: 16 100% 40%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 100%;
-    --water-deep: 16 80% 30%;
-    --water-medium: 16 90% 45%;
-    --water-light: 16 70% 60%;
-    --gradient-water: linear-gradient(135deg, hsl(16 100% 40%), hsl(16 80% 55%));
-    --gradient-hero: linear-gradient(135deg, hsl(16 100% 20%) 0%, hsl(16 90% 35%) 50%, hsl(16 80% 45%) 100%);
-    --shadow-water: 0 10px 40px -10px hsl(16 100% 40% / 0.25);
-    --ring: 16 100% 40%;
-  }
+.theme-uf {
+  --primary: 24 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 220 100% 30%;
+  --accent-foreground: 0 0% 100%;
+  --water-deep: 220 80% 25%;
+  --water-medium: 24 90% 50%;
+  --water-light: 24 80% 65%;
+  --gradient-water: linear-gradient(135deg, hsl(24 100% 50%), hsl(220 100% 30%));
+  --gradient-hero: linear-gradient(135deg, hsl(220 100% 15%) 0%, hsl(24 90% 40%) 50%, hsl(24 100% 50%) 100%);
+  --shadow-water: 0 10px 40px -10px hsl(24 100% 50% / 0.25);
+  --ring: 24 100% 50%;
+}
 
-  .theme-auburn {
-    --primary: 22 80% 35%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 220 60% 30%;
-    --accent-foreground: 0 0% 100%;
-    --water-deep: 22 70% 25%;
-    --water-medium: 220 50% 40%;
-    --water-light: 22 60% 55%;
-    --gradient-water: linear-gradient(135deg, hsl(22 80% 35%), hsl(220 60% 30%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 60% 15%) 0%, hsl(22 70% 30%) 50%, hsl(22 80% 40%) 100%);
-    --shadow-water: 0 10px 40px -10px hsl(22 80% 35% / 0.25);
-    --ring: 22 80% 35%;
-  }
+.theme-osu {
+  --primary: 16 100% 40%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 100%;
+  --water-deep: 16 80% 30%;
+  --water-medium: 16 90% 45%;
+  --water-light: 16 70% 60%;
+  --gradient-water: linear-gradient(135deg, hsl(16 100% 40%), hsl(16 80% 55%));
+  --gradient-hero: linear-gradient(135deg, hsl(16 100% 20%) 0%, hsl(16 90% 35%) 50%, hsl(16 80% 45%) 100%);
+  --shadow-water: 0 10px 40px -10px hsl(16 100% 40% / 0.25);
+  --ring: 16 100% 40%;
+}
 
-  .theme-epa {
-    --primary: 210 70% 35%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 145 50% 38%;
-    --accent-foreground: 0 0% 100%;
-    --water-deep: 210 60% 28%;
-    --water-medium: 145 45% 42%;
-    --water-light: 145 40% 60%;
-    --gradient-water: linear-gradient(135deg, hsl(210 70% 35%), hsl(145 50% 38%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 70% 18%) 0%, hsl(210 60% 30%) 50%, hsl(145 50% 38%) 100%);
-    --shadow-water: 0 10px 40px -10px hsl(210 70% 35% / 0.25);
-    --ring: 210 70% 35%;
-  }
+.theme-auburn {
+  --primary: 22 80% 35%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 220 60% 30%;
+  --accent-foreground: 0 0% 100%;
+  --water-deep: 22 70% 25%;
+  --water-medium: 220 50% 40%;
+  --water-light: 22 60% 55%;
+  --gradient-water: linear-gradient(135deg, hsl(22 80% 35%), hsl(220 60% 30%));
+  --gradient-hero: linear-gradient(135deg, hsl(220 60% 15%) 0%, hsl(22 70% 30%) 50%, hsl(22 80% 40%) 100%);
+  --shadow-water: 0 10px 40px -10px hsl(22 80% 35% / 0.25);
+  --ring: 22 80% 35%;
+}
+
+.theme-epa {
+  --primary: 210 70% 35%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 145 50% 38%;
+  --accent-foreground: 0 0% 100%;
+  --water-deep: 210 60% 28%;
+  --water-medium: 145 45% 42%;
+  --water-light: 145 40% 60%;
+  --gradient-water: linear-gradient(135deg, hsl(210 70% 35%), hsl(145 50% 38%));
+  --gradient-hero: linear-gradient(135deg, hsl(210 70% 18%) 0%, hsl(210 60% 30%) 50%, hsl(145 50% 38%) 100%);
+  --shadow-water: 0 10px 40px -10px hsl(210 70% 35% / 0.25);
+  --ring: 210 70% 35%;
 }
 
 @layer base {
