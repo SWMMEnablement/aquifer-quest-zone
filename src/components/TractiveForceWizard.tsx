@@ -4,29 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { designTractiveForce, BED_MATERIALS_MAP, BANK_MATERIALS_MAP } from "@/lib/hydrology/stable-channel";
 
 interface TractiveForceWizardProps {
   onClose: () => void;
 }
 
-const BANK_MATERIALS: Record<string, { name: string; tau_c: number; angle: number }> = {
-  "fine-sand": { name: "Fine Sand", tau_c: 1.2, angle: 28 },
-  "medium-sand": { name: "Medium Sand", tau_c: 2.4, angle: 32 },
-  "coarse-sand": { name: "Coarse Sand", tau_c: 3.6, angle: 34 },
-  "fine-gravel": { name: "Fine Gravel", tau_c: 7.2, angle: 36 },
-  "medium-gravel": { name: "Medium Gravel", tau_c: 14.4, angle: 38 },
-  "cohesive-clay": { name: "Cohesive Clay", tau_c: 12.5, angle: 45 },
-  "stiff-clay": { name: "Stiff Clay", tau_c: 25.0, angle: 50 },
-};
-
-const BED_MATERIALS: Record<string, { name: string; tau_c: number; n: number }> = {
-  "fine-sand": { name: "Fine Sand (D50=0.4mm)", tau_c: 1.2, n: 0.020 },
-  "medium-sand": { name: "Medium Sand (D50=1mm)", tau_c: 2.4, n: 0.025 },
-  "coarse-sand": { name: "Coarse Sand (D50=2mm)", tau_c: 3.6, n: 0.028 },
-  "fine-gravel": { name: "Fine Gravel (D50=8mm)", tau_c: 7.2, n: 0.030 },
-  "medium-gravel": { name: "Medium Gravel (D50=25mm)", tau_c: 14.4, n: 0.033 },
-  "coarse-gravel": { name: "Coarse Gravel (D50=75mm)", tau_c: 38.0, n: 0.040 },
-};
+const BED_MATERIALS = BED_MATERIALS_MAP;
+const BANK_MATERIALS = BANK_MATERIALS_MAP;
 
 const TractiveForceWizard = ({ onClose }: TractiveForceWizardProps) => {
   const [step, setStep] = useState(1);
@@ -40,65 +25,9 @@ const TractiveForceWizard = ({ onClose }: TractiveForceWizardProps) => {
   const bed = BED_MATERIALS[bedMat];
   const bank = BANK_MATERIALS[bankMat];
 
-  const design = useMemo(() => {
-    const gamma = 9810; // N/m³
-    const g = 9.81;
-    const z = sideSlope[0];
-    const S = slope[0];
-    const n = bed.n;
-    const tauBed = bed.tau_c;
-    const tauBank = bank.tau_c;
-    const phi = bank.angle * (Math.PI / 180);
-    const theta = Math.atan(1 / z);
-    const K = Math.sqrt(1 - Math.sin(theta) ** 2 / Math.sin(phi) ** 2);
-    const tauBankEffective = tauBank * K;
-
-    // Max depth from bank stability: tau_bank = 0.75 * gamma * d * S
-    const dMax = tauBankEffective / (0.75 * gamma * S);
-    // Max depth from bed: tau_bed = gamma * d * S
-    const dMaxBed = tauBed / (gamma * S);
-    const d = Math.min(dMax, dMaxBed);
-
-    // Solve for bottom width using Manning's equation: Q = (1/n) * A * R^(2/3) * S^(1/2)
-    // A = (b + z*d) * d, P = b + 2*d*sqrt(1+z²)
-    // Iteratively solve for b
-    let b = 1;
-    for (let i = 0; i < 100; i++) {
-      const A = (b + z * d) * d;
-      const P = b + 2 * d * Math.sqrt(1 + z * z);
-      const R = A / P;
-      const Qc = (1 / n) * A * Math.pow(R, 2 / 3) * Math.pow(S, 0.5);
-      if (Math.abs(Qc - Q[0]) < 0.01) break;
-      b += (Q[0] - Qc) * 0.1;
-      if (b < 0.5) { b = 0.5; break; }
-    }
-    b = Math.max(b, 0.5);
-
-    const A = (b + z * d) * d;
-    const P = b + 2 * d * Math.sqrt(1 + z * z);
-    const R = A / P;
-    const V = (1 / n) * Math.pow(R, 2 / 3) * Math.pow(S, 0.5);
-    const T = b + 2 * z * d;
-    const D = A / T;
-    const Fr = V / Math.sqrt(g * D);
-
-    const tauActualBed = gamma * d * S;
-    const tauActualBank = 0.75 * gamma * d * S;
-    const fsBed = tauBed / tauActualBed;
-    const fsBank = tauBankEffective / tauActualBank;
-
-    return {
-      d: Math.max(d, 0.1),
-      b: Math.max(b, 0.5),
-      A, P, R, V, T, Fr, K,
-      tauActualBed, tauActualBank,
-      tauBed, tauBankEffective,
-      fsBed: isFinite(fsBed) ? fsBed : 0,
-      fsBank: isFinite(fsBank) ? fsBank : 0,
-      dMax, dMaxBed,
-      totalDepth: Math.max(d, 0.1) + freeboard[0],
-    };
-  }, [bedMat, bankMat, Q, slope, sideSlope, freeboard, bed, bank]);
+  const design = useMemo(() =>
+    designTractiveForce(Q[0], slope[0], sideSlope[0], freeboard[0], bed, bank),
+    [bedMat, bankMat, Q, slope, sideSlope, freeboard, bed, bank]);
 
   const safetyIcon = (fs: number) => {
     if (fs >= 1.5) return <CheckCircle className="w-5 h-5 text-earth-green" />;

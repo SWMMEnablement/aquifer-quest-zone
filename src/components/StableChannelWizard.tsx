@@ -7,12 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { designStableChannel, BANK_MATERIALS, type CrossSectionShape } from "@/lib/hydrology/stable-channel";
 
 interface StableChannelWizardProps {
   onClose: () => void;
 }
-
-type CrossSectionShape = "trapezoidal" | "rectangular" | "parabolic" | "triangular";
 
 interface ChannelParams {
   discharge: number;
@@ -23,14 +22,7 @@ interface ChannelParams {
   sideSlope: number;
 }
 
-const bankMaterials = [
-  { value: "sand", label: "Sand (loose)", n: 0.025, angle: 26 },
-  { value: "gravel", label: "Gravel", n: 0.028, angle: 32 },
-  { value: "cobbles", label: "Cobbles", n: 0.035, angle: 38 },
-  { value: "clay", label: "Clay (stiff)", n: 0.022, angle: 45 },
-  { value: "vegetated", label: "Vegetated", n: 0.040, angle: 35 },
-  { value: "riprap", label: "Riprap", n: 0.045, angle: 40 },
-];
+const bankMaterials = BANK_MATERIALS;
 
 const StableChannelWizard = ({ onClose }: StableChannelWizardProps) => {
   const [shape, setShape] = useState<CrossSectionShape>("trapezoidal");
@@ -46,103 +38,9 @@ const StableChannelWizard = ({ onClose }: StableChannelWizardProps) => {
 
   const bankInfo = bankMaterials.find(b => b.value === params.bankMaterial) || bankMaterials[1];
 
-  // Calculate stable channel dimensions using regime equations
-  const calculations = useMemo(() => {
-    const Q = params.discharge;
-    const S = params.slope;
-    const d50 = params.sedimentSize / 1000; // Convert mm to m
-    const n = params.manningN;
-    const z = params.sideSlope;
-
-    // Lacey's regime equations (modified)
-    const f = 1.76 * Math.sqrt(d50 * 1000); // Silt factor
-    const P = 4.75 * Math.sqrt(Q); // Wetted perimeter (m)
-    const R = 0.47 * Math.pow(Q / f, 1/3); // Hydraulic radius (m)
-    const A = P * R; // Cross-sectional area (m²)
-
-    // Shape-specific calculations
-    let width: number, depth: number, velocity: number, area: number, wettedPerimeter: number;
-
-    switch (shape) {
-      case "rectangular":
-        // For rectangular: A = B*y, P = B + 2y
-        // Optimize for hydraulic efficiency: B = 2y
-        depth = Math.pow(A / 2, 1/3);
-        width = 2 * depth;
-        area = width * depth;
-        wettedPerimeter = width + 2 * depth;
-        break;
-      case "triangular":
-        // For triangular: A = z*y², P = 2y*sqrt(1+z²)
-        depth = Math.pow(A / z, 0.5);
-        width = 2 * z * depth;
-        area = z * depth * depth;
-        wettedPerimeter = 2 * depth * Math.sqrt(1 + z * z);
-        break;
-      case "parabolic":
-        // For parabolic: A = (2/3)*T*y, P ≈ T + (8y²)/(3T)
-        depth = Math.pow(3 * A / 4, 1/3);
-        width = 1.5 * A / depth;
-        area = (2/3) * width * depth;
-        wettedPerimeter = width + (8 * depth * depth) / (3 * width);
-        break;
-      case "trapezoidal":
-      default:
-        // For trapezoidal: A = (B + zy)y, P = B + 2y*sqrt(1+z²)
-        // Using regime theory approximation
-        depth = R * 1.1;
-        width = A / depth - z * depth;
-        if (width < 0) width = Math.sqrt(A);
-        area = (width + z * depth) * depth;
-        wettedPerimeter = width + 2 * depth * Math.sqrt(1 + z * z);
-        break;
-    }
-
-    const hydraulicRadius = area / wettedPerimeter;
-    velocity = (1 / n) * Math.pow(hydraulicRadius, 2/3) * Math.pow(S, 0.5);
-    const calculatedQ = velocity * area;
-
-    // Froude number
-    const froude = velocity / Math.sqrt(9.81 * depth);
-
-    // Shear stress
-    const shearStress = 9810 * hydraulicRadius * S; // Pa
-    const criticalShearStress = 0.047 * (2650 - 1000) * 9.81 * d50; // Shields criterion
-
-    // Stability assessment
-    const stabilityRatio = criticalShearStress / shearStress;
-    let stabilityStatus: "stable" | "marginal" | "unstable";
-    if (stabilityRatio > 1.3) stabilityStatus = "stable";
-    else if (stabilityRatio > 0.9) stabilityStatus = "marginal";
-    else stabilityStatus = "unstable";
-
-    // Rating exponent (beta) for rating curve Q = aH^beta
-    const beta = shape === "rectangular" ? 5/3 
-               : shape === "triangular" ? 8/3 
-               : shape === "parabolic" ? 7/3 
-               : 5/3 + 0.5; // trapezoidal approximation
-
-    // Width-to-depth ratio
-    const widthDepthRatio = width / depth;
-
-    return {
-      width: Math.max(0.5, width),
-      depth: Math.max(0.1, depth),
-      area: Math.max(0.1, area),
-      wettedPerimeter: Math.max(0.5, wettedPerimeter),
-      hydraulicRadius: Math.max(0.05, hydraulicRadius),
-      velocity: Math.max(0.1, velocity),
-      calculatedQ,
-      froude,
-      shearStress,
-      criticalShearStress,
-      stabilityRatio,
-      stabilityStatus,
-      beta,
-      widthDepthRatio,
-      siltFactor: f,
-    };
-  }, [params, shape]);
+  const calculations = useMemo(() =>
+    designStableChannel(params.discharge, params.slope, params.sedimentSize, params.manningN, params.sideSlope, shape),
+    [params, shape]);
 
   // SVG cross-section visualization
   const renderCrossSection = () => {
