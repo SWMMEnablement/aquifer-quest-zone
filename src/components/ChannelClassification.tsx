@@ -14,7 +14,7 @@ const stabilityColor = (s: string) => {
   return "bg-destructive/10 text-destructive";
 };
 
-const ChannelClassification = ({ onClose }: ChannelClassificationProps) => {
+const ChannelClassification = ({ onClose }: { onClose: () => void }) => {
   const [answers, setAnswers] = useState<number[]>([]);
   const [mode, setMode] = useState<"tree" | "gallery">("tree");
 

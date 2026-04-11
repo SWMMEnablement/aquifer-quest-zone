@@ -88,7 +88,7 @@ const GroundwaterSimulator = ({ onClose }: GroundwaterSimulatorProps) => {
       
       const newYear = lastPoint.year + 1;
       
-      const newPoint: TimeSeriesPoint = {
+      const newPoint: SimulationStep = {
         year: newYear,
         storage: Math.round(newStorage * 10) / 10,
         waterTable: Math.round(newWaterTable * 100) / 100,
