@@ -838,7 +838,7 @@ function PumpCurves() {
             </div>
             <div className="bg-secondary/30 rounded-lg p-2">
               <span className="text-xs text-muted-foreground block">Pump Type</span>
-              <span className="font-bold text-xs">{Ns < 2000 ? "Radial" : Ns < 5000 ? "Mixed" : "Axial"}</span>
+              <span className="font-bold text-xs">{classifyPumpType(Ns)}</span>
             </div>
           </div>
         </CardContent>
