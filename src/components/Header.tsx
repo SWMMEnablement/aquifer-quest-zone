@@ -59,11 +59,12 @@ const Header = ({ isCalculatorOpen, onOpenDocs }: HeaderProps) => {
   }, []);
 
   useEffect(() => {
-    const root = document.documentElement;
-    // Remove all theme classes
-    THEMES.forEach(t => { if (t.id !== "default") root.classList.remove(`theme-${t.id}`); });
-    // Apply selected
-    if (themeId !== "default") root.classList.add(`theme-${themeId}`);
+    // Apply theme to both html and body for maximum compatibility
+    const targets = [document.documentElement, document.body];
+    targets.forEach(el => {
+      THEMES.forEach(t => { if (t.id !== "default") el.classList.remove(`theme-${t.id}`); });
+      if (themeId !== "default") el.classList.add(`theme-${themeId}`);
+    });
     localStorage.setItem("uni-theme", themeId);
   }, [themeId]);
 
