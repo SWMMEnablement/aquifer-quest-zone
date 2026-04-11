@@ -1,80 +1,55 @@
+import { lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
-import CNCalculator from "@/components/CNCalculator";
-import GroundwaterSimulator from "@/components/GroundwaterSimulator";
-import MuskingumSimulator from "@/components/MuskingumSimulator";
-import StableChannelWizard from "@/components/StableChannelWizard";
-import AlbedoWaterBalance from "@/components/AlbedoWaterBalance";
-import HydroEcologicalTracker from "@/components/HydroEcologicalTracker";
-import SaintVenantVisualizer from "@/components/SaintVenantVisualizer";
-import Documentation from "@/components/Documentation";
-import ManningRatingCurve from "@/components/ManningRatingCurve";
-import SpecificEnergyMomentum from "@/components/SpecificEnergyMomentum";
-import GVFProfileClassifier from "@/components/GVFProfileClassifier";
-import WavePropagationLab from "@/components/WavePropagationLab";
-import UnitHydrographBuilder from "@/components/UnitHydrographBuilder";
-import RationalMethodCalculator from "@/components/RationalMethodCalculator";
-import LanesBalance from "@/components/LanesBalance";
-import CatchmentWaterBalance from "@/components/CatchmentWaterBalance";
-import TheisWellCalculator from "@/components/TheisWellCalculator";
-import VedernikovRollWave from "@/components/VedernikovRollWave";
-import BaseflowRecession from "@/components/BaseflowRecession";
-import FloodFrequencyAnalysis from "@/components/FloodFrequencyAnalysis";
-import SpillwayDesigner from "@/components/SpillwayDesigner";
-import SedimentTransportCalculator from "@/components/SedimentTransportCalculator";
-import FormFrictionDecomposer from "@/components/FormFrictionDecomposer";
-import ETCalculatorSuite from "@/components/ETCalculatorSuite";
-import EnvironmentalFlowCalculator from "@/components/EnvironmentalFlowCalculator";
-import FroudeNumberExplorer from "@/components/FroudeNumberExplorer";
-import CulvertAnalyzer from "@/components/CulvertAnalyzer";
-import TractiveForceWizard from "@/components/TractiveForceWizard";
-import StillingBasinDesigner from "@/components/StillingBasinDesigner";
-import ChannelClassification from "@/components/ChannelClassification";
-import GWRechargeCalculator from "@/components/GWRechargeCalculator";
-import CalculatorHub from "@/components/CalculatorHub";
-import WorkflowBuilder from "@/components/WorkflowBuilder";
-import NutshellsGraph from "@/components/NutshellsGraph";
-import VideoLectureCompanion from "@/components/VideoLectureCompanion";
-import SWMMCalculator from "@/components/SWMMCalculator";
 
-const moduleComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
-  "cn-calculator": CNCalculator,
-  "groundwater": GroundwaterSimulator,
-  "muskingum-routing": MuskingumSimulator,
-  "channel-design": StableChannelWizard,
-  "albedo": AlbedoWaterBalance,
-  "hydroecology": HydroEcologicalTracker,
-  "saint-venant": SaintVenantVisualizer,
-  "documentation": Documentation,
-  "manning-rating": ManningRatingCurve,
-  "specific-energy": SpecificEnergyMomentum,
-  "gvf-profiles": GVFProfileClassifier,
-  "wave-propagation": WavePropagationLab,
-  "unit-hydrograph": UnitHydrographBuilder,
-  "rational-method": RationalMethodCalculator,
-  "lanes-balance": LanesBalance,
-  "catchment-water-balance": CatchmentWaterBalance,
-  "theis-well": TheisWellCalculator,
-  "vedernikov": VedernikovRollWave,
-  "baseflow-recession": BaseflowRecession,
-  "flood-frequency": FloodFrequencyAnalysis,
-  "spillway-design": SpillwayDesigner,
-  "sediment-transport": SedimentTransportCalculator,
-  "form-friction": FormFrictionDecomposer,
-  "et-calculator": ETCalculatorSuite,
-  "environmental-flow": EnvironmentalFlowCalculator,
-  "froude-explorer": FroudeNumberExplorer,
-  "culvert-hydraulics": CulvertAnalyzer,
-  "tractive-force": TractiveForceWizard,
-  "stilling-basin": StillingBasinDesigner,
-  "channel-classification": ChannelClassification,
-  "gw-recharge": GWRechargeCalculator,
-  "calculator-hub": CalculatorHub,
-  "workflow-builder": WorkflowBuilder,
-  "nutshells-graph": NutshellsGraph,
-  "video-lectures": VideoLectureCompanion,
-  "swmm-calculator": SWMMCalculator,
+const moduleComponents: Record<string, React.LazyExoticComponent<React.ComponentType<{ onClose: () => void }>>> = {
+  "cn-calculator": lazy(() => import("@/components/CNCalculator")),
+  "groundwater": lazy(() => import("@/components/GroundwaterSimulator")),
+  "muskingum-routing": lazy(() => import("@/components/MuskingumSimulator")),
+  "channel-design": lazy(() => import("@/components/StableChannelWizard")),
+  "albedo": lazy(() => import("@/components/AlbedoWaterBalance")),
+  "hydroecology": lazy(() => import("@/components/HydroEcologicalTracker")),
+  "saint-venant": lazy(() => import("@/components/SaintVenantVisualizer")),
+  "documentation": lazy(() => import("@/components/Documentation")),
+  "manning-rating": lazy(() => import("@/components/ManningRatingCurve")),
+  "specific-energy": lazy(() => import("@/components/SpecificEnergyMomentum")),
+  "gvf-profiles": lazy(() => import("@/components/GVFProfileClassifier")),
+  "wave-propagation": lazy(() => import("@/components/WavePropagationLab")),
+  "unit-hydrograph": lazy(() => import("@/components/UnitHydrographBuilder")),
+  "rational-method": lazy(() => import("@/components/RationalMethodCalculator")),
+  "lanes-balance": lazy(() => import("@/components/LanesBalance")),
+  "catchment-water-balance": lazy(() => import("@/components/CatchmentWaterBalance")),
+  "theis-well": lazy(() => import("@/components/TheisWellCalculator")),
+  "vedernikov": lazy(() => import("@/components/VedernikovRollWave")),
+  "baseflow-recession": lazy(() => import("@/components/BaseflowRecession")),
+  "flood-frequency": lazy(() => import("@/components/FloodFrequencyAnalysis")),
+  "spillway-design": lazy(() => import("@/components/SpillwayDesigner")),
+  "sediment-transport": lazy(() => import("@/components/SedimentTransportCalculator")),
+  "form-friction": lazy(() => import("@/components/FormFrictionDecomposer")),
+  "et-calculator": lazy(() => import("@/components/ETCalculatorSuite")),
+  "environmental-flow": lazy(() => import("@/components/EnvironmentalFlowCalculator")),
+  "froude-explorer": lazy(() => import("@/components/FroudeNumberExplorer")),
+  "culvert-hydraulics": lazy(() => import("@/components/CulvertAnalyzer")),
+  "tractive-force": lazy(() => import("@/components/TractiveForceWizard")),
+  "stilling-basin": lazy(() => import("@/components/StillingBasinDesigner")),
+  "channel-classification": lazy(() => import("@/components/ChannelClassification")),
+  "gw-recharge": lazy(() => import("@/components/GWRechargeCalculator")),
+  "calculator-hub": lazy(() => import("@/components/CalculatorHub")),
+  "workflow-builder": lazy(() => import("@/components/WorkflowBuilder")),
+  "nutshells-graph": lazy(() => import("@/components/NutshellsGraph")),
+  "video-lectures": lazy(() => import("@/components/VideoLectureCompanion")),
+  "swmm-calculator": lazy(() => import("@/components/SWMMCalculator")),
+  "cn-comparison": lazy(() => import("@/components/CNMethodComparison")),
 };
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="text-center space-y-4">
+      <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
+      <p className="text-muted-foreground text-sm">Loading module…</p>
+    </div>
+  </div>
+);
 
 const ModulePage = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -99,7 +74,9 @@ const ModulePage = () => {
     <div className="min-h-screen bg-background">
       <Header isCalculatorOpen={true} onOpenDocs={openDocs} />
       <div className="pt-16">
-        <ModuleComponent onClose={handleClose} />
+        <Suspense fallback={<LoadingFallback />}>
+          <ModuleComponent onClose={handleClose} />
+        </Suspense>
       </div>
     </div>
   );
