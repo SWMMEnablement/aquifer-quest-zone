@@ -7,46 +7,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  type CrossSection,
+  computeGeometry,
+  computeManning,
+  generateRatingCurve,
+  computeCriticalDepth,
+} from "@/lib/hydrology/open-channel";
 
 interface Props { onClose: () => void; }
-
-type CrossSection = "rectangular" | "trapezoidal" | "triangular" | "circular" | "parabolic";
-
-const computeGeometry = (shape: CrossSection, depth: number, width: number, sideSlope: number, diameter: number) => {
-  let A = 0, P = 0, T = 0;
-  switch (shape) {
-    case "rectangular":
-      A = width * depth; P = width + 2 * depth; T = width; break;
-    case "trapezoidal":
-      A = (width + sideSlope * depth) * depth;
-      P = width + 2 * depth * Math.sqrt(1 + sideSlope * sideSlope);
-      T = width + 2 * sideSlope * depth; break;
-    case "triangular":
-      A = sideSlope * depth * depth;
-      P = 2 * depth * Math.sqrt(1 + sideSlope * sideSlope);
-      T = 2 * sideSlope * depth; break;
-    case "parabolic": {
-      // Parabolic: y = (x/T_f)^2 * d_f where T_f = width (top width at full depth)
-      const Tf = width;
-      A = (2 / 3) * Tf * depth;
-      P = Tf + (8 * depth * depth) / (3 * Tf); // approximate
-      T = Tf * Math.sqrt(depth / Math.max(depth, 0.01));
-      if (T < 0.01) T = 0.01;
-      break;
-    }
-    case "circular": {
-      const r = diameter / 2;
-      const y = Math.min(depth, diameter);
-      const theta = 2 * Math.acos(Math.max(-1, Math.min(1, (r - y) / r)));
-      A = r * r * (theta - Math.sin(theta)) / 2;
-      P = r * theta;
-      T = 2 * Math.sqrt(Math.max(0, 2 * r * y - y * y)); break;
-    }
-  }
-  const R = P > 0 ? A / P : 0;
-  const D = T > 0 ? A / T : 0;
-  return { A, P, R, T, D };
-};
 
 const ManningRatingCurve = ({ onClose }: Props) => {
   const [shape, setShape] = useState<CrossSection>("trapezoidal");
@@ -58,45 +27,15 @@ const ManningRatingCurve = ({ onClose }: Props) => {
   const [currentDepth, setCurrentDepth] = useState(2);
   const [chartMode, setChartMode] = useState("rating");
 
-  const ratingData = useMemo(() => {
-    const data = [];
-    const maxD = shape === "circular" ? diameter : 6;
-    for (let y = 0.1; y <= maxD; y += 0.1) {
-      const { A, P, R, T, D } = computeGeometry(shape, y, width, sideSlope, diameter);
-      if (A <= 0 || P <= 0) continue;
-      const V = (1 / manningN) * Math.pow(R, 2 / 3) * Math.pow(slope, 0.5);
-      const Q = A * V;
-      const Fr = D > 0 ? V / Math.sqrt(9.81 * D) : 0;
-      const E = y + V * V / (2 * 9.81);
-      data.push({ y: +y.toFixed(2), A: +A.toFixed(2), P: +P.toFixed(2), R: +R.toFixed(3), V: +V.toFixed(3), Q: +Q.toFixed(2), Fr: +Fr.toFixed(3), E: +E.toFixed(3) });
-    }
-    return data;
-  }, [shape, width, sideSlope, diameter, manningN, slope]);
+  const ratingData = useMemo(() =>
+    generateRatingCurve(shape, width, sideSlope, diameter, manningN, slope, shape === "circular" ? diameter : 6),
+    [shape, width, sideSlope, diameter, manningN, slope]);
 
   const current = useMemo(() => {
-    const { A, P, R, T, D } = computeGeometry(shape, currentDepth, width, sideSlope, diameter);
-    const V = A > 0 && P > 0 ? (1 / manningN) * Math.pow(R, 2 / 3) * Math.pow(slope, 0.5) : 0;
-    const Q = A * V;
-    const Fr = D > 0 ? V / Math.sqrt(9.81 * D) : 0;
-    const E = currentDepth + V * V / (2 * 9.81);
-    // Critical depth (iterative for non-rectangular)
-    let yc = 0;
-    if (shape === "rectangular") {
-      yc = Math.pow(Q * Q / (9.81 * width * width), 1 / 3);
-    } else {
-      // Bisection for critical depth where Fr=1
-      let lo = 0.01, hi = shape === "circular" ? diameter : 10;
-      for (let iter = 0; iter < 50; iter++) {
-        const mid = (lo + hi) / 2;
-        const g = computeGeometry(shape, mid, width, sideSlope, diameter);
-        const Vc = g.A > 0 ? Q / g.A : 0;
-        const Dc = g.T > 0 ? g.A / g.T : 0;
-        const FrC = Dc > 0 ? Vc / Math.sqrt(9.81 * Dc) : 0;
-        if (FrC > 1) lo = mid; else hi = mid;
-      }
-      yc = (lo + hi) / 2;
-    }
-    return { A: +A.toFixed(2), P: +P.toFixed(2), R: +R.toFixed(3), V: +V.toFixed(3), Q: +Q.toFixed(2), Fr: +Fr.toFixed(3), yc: +yc.toFixed(3), E: +E.toFixed(3), T: +T.toFixed(2), D: +D.toFixed(3) };
+    const result = computeManning(shape, currentDepth, width, sideSlope, diameter, manningN, slope);
+    const geo = computeGeometry(shape, currentDepth, width, sideSlope, diameter);
+    const yc = computeCriticalDepth(shape, result.Q, width, sideSlope, diameter);
+    return { A: +result.A.toFixed(2), P: +result.P.toFixed(2), R: +result.R.toFixed(3), V: +result.V.toFixed(3), Q: +result.Q.toFixed(2), Fr: +result.Fr.toFixed(3), yc: +yc.toFixed(3), E: +result.E.toFixed(3), T: +geo.T.toFixed(2), D: +geo.D.toFixed(3) };
   }, [shape, currentDepth, width, sideSlope, diameter, manningN, slope]);
 
   // Cross-section SVG points

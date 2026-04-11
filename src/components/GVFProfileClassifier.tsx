@@ -5,13 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { classifyGVFProfile, type BoundaryType, type SlopeCategory } from "@/lib/hydrology/open-channel";
 
 interface Props { onClose: () => void; }
 
 const g = 9.81;
-
-type SlopeCategory = "mild" | "steep" | "critical" | "horizontal" | "adverse";
-type BoundaryType = "dam" | "free-overfall" | "gate";
 
 const profileDescriptions: Record<string, string> = {
   M1: "Backwater curve above yn. Caused by dams or raised tailwater. Depth increases upstream.",
@@ -36,53 +34,11 @@ const GVFProfileClassifier = ({ onClose }: Props) => {
   const [slope, setSlope] = useState(0.001);
   const [boundary, setBoundary] = useState<BoundaryType>("dam");
 
-  const yn = useMemo(() => {
-    // Normal depth by iteration (rectangular)
-    if (slope <= 0) return Infinity;
-    for (let y = 0.01; y < 20; y += 0.01) {
-      const A = width * y;
-      const P = width + 2 * y;
-      const R = A / P;
-      const Qn = (1 / manningN) * A * Math.pow(R, 2 / 3) * Math.pow(slope, 0.5);
-      if (Qn >= Q) return +y.toFixed(3);
-    }
-    return 20;
-  }, [Q, width, manningN, slope]);
+  const gvf = useMemo(() =>
+    classifyGVFProfile(Q, width, manningN, slope, boundary, slopeCategory),
+    [Q, width, manningN, slope, boundary, slopeCategory]);
 
-  const yc = useMemo(() => Math.pow(Q * Q / (g * width * width), 1 / 3), [Q, width]);
-
-  const slopeType = useMemo(() => {
-    if (slope <= 0) return slopeCategory === "adverse" ? "Adverse" : "Horizontal";
-    if (Math.abs(yn - yc) < 0.05) return "Critical";
-    return yn > yc ? "Mild" : "Steep";
-  }, [yn, yc, slope, slopeCategory]);
-
-  const profiles = useMemo(() => {
-    const list: string[] = [];
-    switch (slopeType) {
-      case "Mild": list.push("M1", "M2", "M3"); break;
-      case "Steep": list.push("S1", "S2", "S3"); break;
-      case "Critical": list.push("C1", "C3"); break;
-      case "Horizontal": list.push("H2", "H3"); break;
-      case "Adverse": list.push("A2", "A3"); break;
-    }
-    return list;
-  }, [slopeType]);
-
-  // Determine active profile based on boundary
-  const activeProfile = useMemo(() => {
-    if (slopeType === "Mild") {
-      if (boundary === "dam") return "M1";
-      if (boundary === "free-overfall") return "M2";
-      if (boundary === "gate") return "M3";
-    }
-    if (slopeType === "Steep") {
-      if (boundary === "dam") return "S1";
-      if (boundary === "free-overfall") return "S2";
-      if (boundary === "gate") return "S3";
-    }
-    return profiles[0];
-  }, [slopeType, boundary, profiles]);
+  const { yn, yc, slopeType, activeProfile, profiles } = gvf;
 
   // Generate profile shape
   const profileShape = useMemo(() => {

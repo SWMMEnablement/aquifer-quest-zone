@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, TreePine, Droplets, Fish, Bird, Leaf, Factory, Home, Wheat } from "lucide-react";
+import { computeWatershedMetrics } from "@/lib/hydrology/water-balance";
 
 interface HydroEcologicalTrackerProps {
   onClose: () => void;
@@ -14,10 +15,10 @@ interface LandUse {
   name: string;
   icon: React.ElementType;
   color: string;
-  baseFlow: number; // contribution to baseflow (0-1)
-  runoff: number; // runoff coefficient
-  habitat: number; // habitat quality (0-1)
-  pollution: number; // pollution load (0-1)
+  baseFlow: number;
+  runoff: number;
+  habitat: number;
+  pollution: number;
 }
 
 const landUseTypes: LandUse[] = [
@@ -37,15 +38,14 @@ const HydroEcologicalTracker = ({ onClose }: HydroEcologicalTrackerProps) => {
     industrial: 5,
   });
   
-  const [precipitation, setPrecipitation] = useState(1000); // mm/year
-  const [waterDiversion, setWaterDiversion] = useState(20); // % of flow
+  const [precipitation, setPrecipitation] = useState(1000);
+  const [waterDiversion, setWaterDiversion] = useState(20);
 
   const updateLandUse = (id: string, value: number) => {
     const currentTotal = Object.values(landUseDistribution).reduce((a, b) => a + b, 0);
     const currentValue = landUseDistribution[id];
     const diff = value - currentValue;
     
-    // Adjust other values proportionally to maintain 100%
     if (currentTotal + diff !== 100) {
       const others = Object.keys(landUseDistribution).filter(k => k !== id);
       const othersTotal = others.reduce((sum, k) => sum + landUseDistribution[k], 0);
@@ -58,7 +58,6 @@ const HydroEcologicalTracker = ({ onClose }: HydroEcologicalTrackerProps) => {
           newDist[k] = Math.max(0, Math.min(100, landUseDistribution[k] - adjustment));
         });
         
-        // Normalize to 100%
         const newTotal = Object.values(newDist).reduce((a, b) => a + b, 0);
         if (newTotal !== 100) {
           const scale = 100 / newTotal;
@@ -74,60 +73,9 @@ const HydroEcologicalTracker = ({ onClose }: HydroEcologicalTrackerProps) => {
     }
   };
 
-  const watershedMetrics = useMemo(() => {
-    let weightedBaseFlow = 0;
-    let weightedRunoff = 0;
-    let weightedHabitat = 0;
-    let weightedPollution = 0;
-    
-    landUseTypes.forEach(lu => {
-      const fraction = landUseDistribution[lu.id] / 100;
-      weightedBaseFlow += lu.baseFlow * fraction;
-      weightedRunoff += lu.runoff * fraction;
-      weightedHabitat += lu.habitat * fraction;
-      weightedPollution += lu.pollution * fraction;
-    });
-    
-    // Calculate flows (simplified water balance)
-    const totalPrecip = precipitation; // mm/year
-    const evapotranspiration = totalPrecip * (0.4 + 0.3 * (landUseDistribution.forest + landUseDistribution.wetland) / 100);
-    const effectivePrecip = totalPrecip - evapotranspiration;
-    
-    const runoffVolume = effectivePrecip * weightedRunoff;
-    const baseflowVolume = effectivePrecip * (1 - weightedRunoff) * weightedBaseFlow;
-    const totalStreamflow = runoffVolume + baseflowVolume;
-    
-    const availableFlow = totalStreamflow * (1 - waterDiversion / 100);
-    
-    // Ecosystem health indices
-    const flowHealth = Math.min(1, availableFlow / (totalStreamflow * 0.7)); // 70% minimum flow
-    const waterQuality = 1 - weightedPollution * 0.8;
-    const habitatConnectivity = weightedHabitat * (1 - waterDiversion / 200);
-    
-    // Species indicators
-    const fishHealth = flowHealth * waterQuality * 0.8 + habitatConnectivity * 0.2;
-    const birdHealth = habitatConnectivity * 0.6 + waterQuality * 0.4;
-    const riparianHealth = flowHealth * 0.5 + habitatConnectivity * 0.5;
-    
-    const overallEcosystemHealth = (fishHealth + birdHealth + riparianHealth + waterQuality) / 4;
-    
-    return {
-      totalPrecip,
-      evapotranspiration,
-      runoffVolume,
-      baseflowVolume,
-      totalStreamflow,
-      availableFlow,
-      flowHealth,
-      waterQuality,
-      habitatConnectivity,
-      fishHealth,
-      birdHealth,
-      riparianHealth,
-      overallEcosystemHealth,
-      weightedRunoff,
-    };
-  }, [landUseDistribution, precipitation, waterDiversion]);
+  const watershedMetrics = useMemo(() =>
+    computeWatershedMetrics(landUseDistribution, precipitation, waterDiversion),
+    [landUseDistribution, precipitation, waterDiversion]);
 
   const getHealthColor = (value: number) => {
     if (value >= 0.7) return "text-green-500";

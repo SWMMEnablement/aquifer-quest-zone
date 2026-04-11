@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Scatter, ScatterChart, ZAxis } from "recharts";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { computeSpecificEnergy, generateEnergyMomentumCurve } from "@/lib/hydrology/open-channel";
 
 interface Props { onClose: () => void; }
 
@@ -16,8 +17,10 @@ const SpecificEnergyMomentum = ({ onClose }: Props) => {
   const [animTime, setAnimTime] = useState(0);
   const animRef = useRef<number>(0);
 
-  const yc = useMemo(() => Math.pow(q * q / g, 1 / 3), [q]);
-  const Emin = useMemo(() => 1.5 * yc, [yc]);
+  const result = useMemo(() => computeSpecificEnergy(q, currentY), [q, currentY]);
+  const { yc, Emin, Fr: Fr, y2, Fr2, E: currentE, M: currentM, energyLoss, jumpType, efficiency } = result;
+  const V2 = q / y2;
+  const E2 = y2 + V2 * V2 / (2 * g);
 
   // Animation for hydraulic jump
   useEffect(() => {
@@ -29,30 +32,7 @@ const SpecificEnergyMomentum = ({ onClose }: Props) => {
     return () => cancelAnimationFrame(animRef.current);
   }, []);
 
-  const data = useMemo(() => {
-    const pts = [];
-    for (let y = 0.1; y <= 6; y += 0.05) {
-      const V = q / y;
-      const E = y + V * V / (2 * g);
-      const M = q * q / (g * y) + y * y / 2;
-      pts.push({ y: +y.toFixed(2), E: +E.toFixed(3), M: +M.toFixed(3) });
-    }
-    return pts;
-  }, [q]);
-
-  const currentV = q / currentY;
-  const currentE = currentY + currentV * currentV / (2 * g);
-  const currentM = q * q / (g * currentY) + currentY * currentY / 2;
-  const Fr = currentV / Math.sqrt(g * currentY);
-
-  // Conjugate depth
-  const y2 = currentY / 2 * (Math.sqrt(1 + 8 * Fr * Fr) - 1);
-  const V2 = q / y2;
-  const Fr2 = V2 / Math.sqrt(g * y2);
-  const E2 = y2 + V2 * V2 / (2 * g);
-  const energyLoss = currentE - E2;
-  const jumpType = Fr < 1 ? "N/A (subcritical)" : Fr < 1.7 ? "Undular" : Fr < 2.5 ? "Weak" : Fr < 4.5 ? "Oscillating" : Fr < 9 ? "Steady" : "Strong";
-  const efficiency = currentE > 0 ? ((currentE - Math.abs(energyLoss)) / currentE * 100) : 0;
+  const data = useMemo(() => generateEnergyMomentumCurve(q), [q]);
 
   // E-y current points for scatter overlay
   const currentEPoint = [{ E: +currentE.toFixed(3), y: currentY }];

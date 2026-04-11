@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine } from "recharts";
+import { computeRecharge, generateRechargeSensitivity } from "@/lib/hydrology/groundwater";
 
 interface GWRechargeCalculatorProps {
   onClose: () => void;
@@ -26,62 +27,21 @@ const SOIL_TYPES: Record<string, { name: string; infiltCapacity: number; fieldCa
 };
 
 const GWRechargeCalculator = ({ onClose }: GWRechargeCalculatorProps) => {
-  const [P, setP] = useState([800]); // mm/yr
-  const [T, setT] = useState([18]); // °C
+  const [P, setP] = useState([800]);
+  const [T, setT] = useState([18]);
   const [landCover, setLandCover] = useState("grassland");
   const [soilType, setSoilType] = useState("B");
 
   const lc = LAND_COVERS[landCover];
   const soil = SOIL_TYPES[soilType];
 
-  const results = useMemo(() => {
-    const precipitation = P[0];
-    const interception = precipitation * lc.interception;
-    const effectiveP = precipitation - interception;
+  const results = useMemo(() =>
+    computeRecharge(P[0], T[0], lc, soil),
+    [P, T, landCover, soilType, lc, soil]);
 
-    // Thornthwaite-style PET estimate
-    const monthlyT = T[0];
-    const I = 12 * Math.pow(monthlyT / 5, 1.514);
-    const a = 6.75e-7 * I * I * I - 7.71e-5 * I * I + 1.792e-2 * I + 0.49239;
-    const PET = 12 * 16 * Math.pow((10 * monthlyT) / I, a);
-    const AET = Math.min(PET * lc.etFactor, effectiveP * 0.9);
-
-    // Catchment wetting
-    const surfaceRunoff = effectiveP * (1 - soil.infiltCapacity) * 0.6;
-    const wetting = effectiveP - surfaceRunoff;
-
-    // Recharge
-    const recharge = Math.max(wetting - AET, 0);
-    const rechargeCoeff = precipitation > 0 ? recharge / precipitation : 0;
-
-    // Baseflow
-    const baseflow = recharge * 0.7;
-
-    return {
-      precipitation, interception, effectiveP, PET: Math.round(PET),
-      AET: Math.round(AET), surfaceRunoff: Math.round(surfaceRunoff),
-      wetting: Math.round(wetting), recharge: Math.round(recharge),
-      rechargeCoeff, baseflow: Math.round(baseflow),
-    };
-  }, [P, T, landCover, soilType, lc, soil]);
-
-  // Sensitivity: φ vs P
-  const sensitivityData = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => {
-      const pp = 100 + i * 100;
-      const inter = pp * lc.interception;
-      const effP = pp - inter;
-      const monthlyT = T[0];
-      const I = 12 * Math.pow(monthlyT / 5, 1.514);
-      const a = 6.75e-7 * I ** 3 - 7.71e-5 * I ** 2 + 1.792e-2 * I + 0.49239;
-      const PET = 12 * 16 * Math.pow((10 * monthlyT) / I, a);
-      const AET = Math.min(PET * lc.etFactor, effP * 0.9);
-      const sr = effP * (1 - soil.infiltCapacity) * 0.6;
-      const w = effP - sr;
-      const r = Math.max(w - AET, 0);
-      return { P: pp, phi: pp > 0 ? +(r / pp).toFixed(3) : 0, recharge: Math.round(r) };
-    });
-  }, [T, landCover, soilType, lc, soil]);
+  const sensitivityData = useMemo(() =>
+    generateRechargeSensitivity(T[0], lc, soil),
+    [T, landCover, soilType, lc, soil]);
 
   // Water balance arrows
   const total = results.precipitation || 1;

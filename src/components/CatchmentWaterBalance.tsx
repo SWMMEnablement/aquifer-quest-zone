@@ -5,55 +5,28 @@ import { Label } from "@/components/ui/label";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { computeCatchmentBalance, generateMonthlyBalance } from "@/lib/hydrology/water-balance";
 
 interface Props { onClose: () => void; }
 
 const CatchmentWaterBalance = ({ onClose }: Props) => {
-  const [P, setP] = useState(1000); // mm/yr
-  const [temp, setTemp] = useState(15); // °C
+  const [P, setP] = useState(1000);
+  const [temp, setTemp] = useState(15);
   const [forestPct, setForestPct] = useState(40);
   const [urbanPct, setUrbanPct] = useState(20);
-  const [area, setArea] = useState(100); // km²
+  const [area, setArea] = useState(100);
 
   const agPct = 100 - forestPct - urbanPct;
 
-  // Simplified Thornthwaite PET
-  const PET = useMemo(() => {
-    if (temp <= 0) return 0;
-    const I = Math.pow(temp / 5, 1.514) * 12;
-    const a = 6.75e-7 * I * I * I - 7.71e-5 * I * I + 1.79e-2 * I + 0.49;
-    return 16 * Math.pow(10 * temp / I, a) * 12; // annual
-  }, [temp]);
+  const balance = useMemo(() =>
+    computeCatchmentBalance(P, temp, forestPct, urbanPct),
+    [P, temp, forestPct, urbanPct]);
 
-  // Actual ET depends on land cover and available water
-  const ET = useMemo(() => {
-    const cropCoeff = (forestPct * 1.1 + agPct * 0.9 + urbanPct * 0.3) / 100;
-    return Math.min(P * 0.95, PET * cropCoeff);
-  }, [P, PET, forestPct, urbanPct, agPct]);
+  const { PET, ET, Qs, Qb, deltaS } = balance;
 
-  // Surface runoff
-  const Qs = useMemo(() => {
-    const runoffCoeff = (forestPct * 0.1 + agPct * 0.3 + urbanPct * 0.8) / 100;
-    return P * runoffCoeff;
-  }, [P, forestPct, urbanPct, agPct]);
-
-  // Baseflow
-  const Qb = Math.max(0, P - ET - Qs) * 0.6;
-  const deltaS = P - ET - Qs - Qb;
-
-  // Monthly distribution (simplified sinusoidal)
-  const monthlyData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return months.map((m, i) => {
-      const pFrac = 1 + 0.5 * Math.sin((i - 3) * Math.PI / 6); // peaks in Jun
-      const etFrac = 1 + 0.7 * Math.sin((i - 2) * Math.PI / 6); // peaks in Jul
-      const mP = (P / 12) * pFrac;
-      const mET = (ET / 12) * etFrac;
-      const mQs = (Qs / 12) * pFrac * 1.2;
-      const mQb = (Qb / 12) * (1 + 0.3 * Math.sin((i - 4) * Math.PI / 6));
-      return { month: m, P: +mP.toFixed(0), ET: +mET.toFixed(0), Qs: +mQs.toFixed(0), Qb: +mQb.toFixed(0) };
-    });
-  }, [P, ET, Qs, Qb]);
+  const monthlyData = useMemo(() =>
+    generateMonthlyBalance(P, ET, Qs, Qb),
+    [P, ET, Qs, Qb]);
 
   const arrowScale = (val: number) => Math.max(2, Math.min(20, val / 50));
 
