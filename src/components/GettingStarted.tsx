@@ -21,38 +21,44 @@ const learningPaths = [
   {
     id: "beginner",
     title: "Hydrology Fundamentals",
+    audience: "For undergrads and early-grad students.",
+    outcome: "Estimate event runoff with SCS CN and interpret routed hydrographs.",
     icon: GraduationCap,
-    description: "Perfect for students new to hydrology. Start with rainfall-runoff basics.",
+    description: "Start with rainfall-runoff basics and build toward flood routing.",
     duration: "~30 min",
     color: "text-water-light",
     bgColor: "bg-water-light/10",
     borderColor: "border-water-light/30",
     steps: [
-      { module: "cn-calculator", name: "SCS Curve Number", description: "Learn how land use affects runoff" },
-      { module: "muskingum-routing", name: "Flood Routing", description: "Track how floods move downstream" },
-      { module: "documentation", name: "Theory Review", description: "Deepen your understanding" }
+      { module: "cn-calculator", name: "SCS Curve Number", description: "How land use and soils control runoff" },
+      { module: "muskingum-routing", name: "Flood Routing", description: "Track flood waves moving downstream" },
+      { module: "documentation", name: "Theory Review", description: "Equations, assumptions, references" }
     ]
   },
   {
     id: "practitioner",
     title: "Engineering Applications",
+    audience: "For practicing engineers and design-office QC.",
+    outcome: "Run quick conceptual checks for channel, well, and water-balance design.",
     icon: Building2,
-    description: "For practicing engineers. Focus on design and analysis tools.",
+    description: "Hands-on design and analysis tools you can verify against textbook methods.",
     duration: "~45 min",
     color: "text-amber-400",
     bgColor: "bg-amber-400/10",
     borderColor: "border-amber-400/30",
     steps: [
-      { module: "channel-design", name: "Channel Design", description: "Design stable alluvial channels" },
+      { module: "channel-design", name: "Channel Design", description: "Stable alluvial channel sizing" },
       { module: "groundwater", name: "Groundwater Yield", description: "Balance extraction with sustainability" },
-      { module: "albedo", name: "Energy Balance", description: "Assess land cover impacts" }
+      { module: "albedo", name: "Energy Balance", description: "Land-cover impacts on the water budget" }
     ]
   },
   {
     id: "researcher",
     title: "Eco-Hydrology Focus",
+    audience: "For watershed, ecology, and environmental applications.",
+    outcome: "Trace how flow decisions propagate into ecosystem response.",
     icon: TreePine,
-    description: "Explore the intersection of hydrology and ecosystem health.",
+    description: "Connect the water cycle to ecosystem health and management trade-offs.",
     duration: "~40 min",
     color: "text-emerald-400",
     bgColor: "bg-emerald-400/10",
@@ -60,7 +66,7 @@ const learningPaths = [
     steps: [
       { module: "albedo", name: "Albedo & Water Balance", description: "Energy partitioning basics" },
       { module: "hydroecology", name: "Impact Tracker", description: "Link water decisions to ecosystems" },
-      { module: "groundwater", name: "Aquifer Game", description: "Sustainable water management" }
+      { module: "groundwater", name: "Aquifer Game", description: "Sustainable groundwater management" }
     ]
   }
 ];
