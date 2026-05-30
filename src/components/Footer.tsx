@@ -64,11 +64,18 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">About</h3>
             <p className="text-sm text-primary-foreground/70 leading-relaxed">
-              This educational tool is inspired by the extensive web-based hydrology resources created by{" "}
-              <span className="text-primary-foreground">Prof. Victor Miguel Ponce</span> at San Diego State University.
+              This educational tool restructures and modernizes the web-based hydrology resources
+              created by <span className="text-primary-foreground">Prof. Victor Miguel Ponce</span> at
+              San Diego State University into interactive modules, preserving his conceptual
+              explanations and adding modern visualization.
             </p>
-            <p className="text-xs text-primary-foreground/50 mt-4">
-              Not affiliated with SDSU. For educational purposes only.
+            <p className="text-xs text-primary-foreground/60 mt-4 leading-relaxed">
+              <span className="font-semibold text-primary-foreground/80">Designed for:</span> undergraduate
+              hydrology courses, graduate electives, and practicing engineers needing quick conceptual checks.
+            </p>
+            <p className="text-xs text-primary-foreground/50 mt-3 leading-relaxed">
+              These tools illustrate methods and concepts. For final design, verify all assumptions and
+              parameters and consult local design manuals and regulatory criteria. Not affiliated with SDSU.
             </p>
           </div>
         </div>
