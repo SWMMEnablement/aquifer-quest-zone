@@ -189,10 +189,11 @@ const GettingStarted = ({ onOpenModule }: GettingStartedProps) => {
                 </div>
 
                 {/* Start Button */}
-                <Button 
-                  variant="outline" 
-                  className={`w-full ${path.borderColor} hover:${path.bgColor}`}
+                <Button
+                  variant="water"
+                  className="w-full"
                   onClick={() => onOpenModule(path.steps[0].module)}
+                  aria-label={`Start the ${path.title} learning path`}
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   Start This Path
