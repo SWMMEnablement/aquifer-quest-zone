@@ -1,6 +1,17 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type ModuleKind = "Calculator" | "Simulator" | "Visualization" | "Builder" | "Game";
+
+function inferKind(title: string): ModuleKind {
+  const t = title.toLowerCase();
+  if (t.includes("game") || t.includes("yield simulator")) return "Game";
+  if (t.includes("simulator")) return "Simulator";
+  if (t.includes("explorer") || t.includes("visualizer") || t.includes("lab") || t.includes("classifier") || t.includes("tracker") || t.includes("graph") || t.includes("companion")) return "Visualization";
+  if (t.includes("builder") || t.includes("wizard") || t.includes("designer")) return "Builder";
+  return "Calculator";
+}
+
 interface ModuleCardProps {
   title: string;
   description: string;
