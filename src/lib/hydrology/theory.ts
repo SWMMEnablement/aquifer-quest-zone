@@ -7,7 +7,7 @@ export interface TheoryEquation {
   label: string;
   /** Plain-text or unicode equation. Use sub/sup unicode for compactness. */
   formula: string;
-  /** Optional short description of variables/usage. */
+  /** Optional short description of variables/usage. Supports inline citations like [1]. */
   notes?: string;
 }
 
@@ -24,6 +24,20 @@ export interface TheoryReference {
   url?: string;
 }
 
+export interface TheoryExampleField {
+  label: string;
+  value: string;
+  units?: string;
+}
+
+export interface TheoryExample {
+  title: string;
+  description?: string;
+  inputs: TheoryExampleField[];
+  outputs: TheoryExampleField[];
+  notes?: string;
+}
+
 export interface ModuleTheory {
   title: string;
   summary: string;
@@ -32,7 +46,10 @@ export interface ModuleTheory {
   limitations: string[];
   parameters: TheoryParameter[];
   references: TheoryReference[];
+  /** Optional worked examples (2–3 recommended). */
+  examples?: TheoryExample[];
 }
+
 
 const PONCE = (path: string, label: string): TheoryReference => ({
   citation: label,
