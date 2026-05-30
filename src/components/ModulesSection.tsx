@@ -142,10 +142,12 @@ const ModulesSection = ({ onOpenModule }: ModulesSectionProps) => {
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground animate-fade-in" style={{ animationDelay: '0.1s' }}>
             {totalModules} interactive tools spanning {domains.length} hydrological domains.
+            Each card is tagged by type — Calculator, Simulator, Builder, or Visualization — so you can pick the right tool fast.
           </p>
           <button
             onClick={() => onOpenModule("calculator-hub")}
             className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+            aria-label="Open the Calculator Hub to search all modules"
           >
             <Grid3X3 className="w-4 h-4" />
             Open Calculator Hub
