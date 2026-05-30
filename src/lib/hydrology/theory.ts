@@ -864,5 +864,216 @@ export const MODULE_THEORY: Record<string, ModuleTheory> = {
   },
 };
 
-export const getTheory = (slug: string | undefined): ModuleTheory | null =>
-  (slug && MODULE_THEORY[slug]) || null;
+/** Worked examples (input → output). Stored separately so the main registry stays compact. */
+const MODULE_EXAMPLES: Record<string, TheoryExample[]> = {
+  "cn-calculator": [
+    {
+      title: "Suburban storm (CN = 80, P = 75 mm)",
+      description: "Standard SCS computation with Iₐ = 0.2 S [1].",
+      inputs: [
+        { label: "Curve Number (CN)", value: "80" },
+        { label: "Storm rainfall P", value: "75", units: "mm" },
+        { label: "AMC class", value: "II" },
+      ],
+      outputs: [
+        { label: "S = 25400/CN − 254", value: "63.5", units: "mm" },
+        { label: "Iₐ = 0.2 S", value: "12.7", units: "mm" },
+        { label: "Runoff Q", value: "30.4", units: "mm" },
+        { label: "Runoff coefficient Q/P", value: "0.41" },
+      ],
+    },
+    {
+      title: "Dry-antecedent forest (CN = 55 → CN(I) = 35)",
+      description: "Apply AMC I adjustment, then run the SCS equation [2].",
+      inputs: [
+        { label: "CN(II)", value: "55" },
+        { label: "P", value: "50", units: "mm" },
+        { label: "AMC class", value: "I (dry)" },
+      ],
+      outputs: [
+        { label: "CN(I)", value: "35" },
+        { label: "S", value: "471.7", units: "mm" },
+        { label: "Iₐ", value: "94.3", units: "mm" },
+        { label: "Runoff Q", value: "0", units: "mm", note: "P < Iₐ → no runoff" },
+      ],
+    },
+    {
+      title: "Wet urban catchment (CN = 92, P = 120 mm)",
+      inputs: [
+        { label: "CN(II)", value: "92" },
+        { label: "P", value: "120", units: "mm" },
+        { label: "AMC class", value: "III (wet)" },
+      ],
+      outputs: [
+        { label: "CN(III)", value: "96.4" },
+        { label: "S", value: "9.5", units: "mm" },
+        { label: "Q", value: "108.8", units: "mm" },
+        { label: "Q/P", value: "0.91" },
+      ],
+    },
+  ],
+
+  "muskingum-routing": [
+    {
+      title: "Wide channel, mild slope",
+      description: "Compute Muskingum–Cunge parameters for a single reach [1].",
+      inputs: [
+        { label: "Reach length Δx", value: "5000", units: "m" },
+        { label: "Bed slope S₀", value: "0.0008" },
+        { label: "Wave celerity c", value: "1.4", units: "m/s" },
+        { label: "Unit discharge q", value: "2.5", units: "m²/s" },
+        { label: "Time step Δt", value: "900", units: "s" },
+      ],
+      outputs: [
+        { label: "Travel time K = Δx/c", value: "3571", units: "s" },
+        { label: "Weighting X", value: "0.27" },
+        { label: "Courant C", value: "0.252" },
+        { label: "Cell Reynolds D", value: "0.625" },
+        { label: "C + D", value: "0.88", note: "Near grid-independence target ≈ 1" },
+      ],
+    },
+    {
+      title: "Steep channel — translation-dominated",
+      inputs: [
+        { label: "Δx", value: "2000", units: "m" },
+        { label: "S₀", value: "0.01" },
+        { label: "c", value: "3.0", units: "m/s" },
+        { label: "q", value: "4.0", units: "m²/s" },
+        { label: "Δt", value: "300", units: "s" },
+      ],
+      outputs: [
+        { label: "K", value: "667", units: "s" },
+        { label: "X", value: "0.467", note: "→ 0.5 = pure translation" },
+        { label: "C", value: "0.45" },
+        { label: "D", value: "0.067" },
+      ],
+    },
+  ],
+
+  "channel-design": [
+    {
+      title: "Lacey regime canal (Q = 50 m³/s, f = 1.0)",
+      description: "Stable alluvial dimensions from Lacey's regime equations [3].",
+      inputs: [
+        { label: "Design discharge Q", value: "50", units: "m³/s" },
+        { label: "Silt factor f", value: "1.0" },
+      ],
+      outputs: [
+        { label: "Wetted perimeter P = 4.75√Q", value: "33.6", units: "m" },
+        { label: "Hydraulic radius R = 0.47 (Q/f)^(1/3)", value: "1.73", units: "m" },
+        { label: "Approx. depth", value: "1.5", units: "m" },
+      ],
+    },
+    {
+      title: "Tractive force check on gravel bed",
+      description: "Shields-based non-erosion check [2].",
+      inputs: [
+        { label: "Hydraulic radius R", value: "1.2", units: "m" },
+        { label: "Slope S", value: "0.0012" },
+        { label: "d₅₀", value: "20", units: "mm" },
+        { label: "θ_c", value: "0.047" },
+      ],
+      outputs: [
+        { label: "τ₀ = γRS", value: "14.1", units: "N/m²" },
+        { label: "τ_c (Shields)", value: "15.3", units: "N/m²" },
+        { label: "Verdict", value: "Stable", note: "τ₀ < τ_c" },
+      ],
+    },
+  ],
+
+  "manning-rating": [
+    {
+      title: "Trapezoidal concrete channel",
+      description: "Compute Q at y = 1.5 m using Manning [1].",
+      inputs: [
+        { label: "Bottom width b", value: "3.0", units: "m" },
+        { label: "Side slope z", value: "1.5" },
+        { label: "Depth y", value: "1.5", units: "m" },
+        { label: "n", value: "0.013" },
+        { label: "S", value: "0.001" },
+      ],
+      outputs: [
+        { label: "Area A", value: "7.875", units: "m²" },
+        { label: "Wetted perimeter P", value: "8.41", units: "m" },
+        { label: "R = A/P", value: "0.936", units: "m" },
+        { label: "Discharge Q", value: "18.0", units: "m³/s" },
+      ],
+    },
+    {
+      title: "Vegetated floodplain",
+      inputs: [
+        { label: "Depth y", value: "0.8", units: "m" },
+        { label: "Width (rectangular)", value: "50", units: "m" },
+        { label: "n", value: "0.07" },
+        { label: "S", value: "0.0005" },
+      ],
+      outputs: [
+        { label: "R ≈ y", value: "0.78", units: "m" },
+        { label: "Q", value: "13.7", units: "m³/s" },
+        { label: "V", value: "0.34", units: "m/s" },
+      ],
+    },
+  ],
+
+  groundwater: [
+    {
+      title: "Sustainable yield check",
+      description: "Annual water-balance sanity check [1].",
+      inputs: [
+        { label: "Recharge R", value: "120", units: "mm/yr" },
+        { label: "Baseflow Q_b,min", value: "30", units: "mm/yr" },
+        { label: "Phreatic ET", value: "10", units: "mm/yr" },
+      ],
+      outputs: [
+        { label: "Max sustainable pumping", value: "80", units: "mm/yr" },
+        { label: "Verdict @ 100 mm/yr pump", value: "Overdraft" },
+      ],
+    },
+    {
+      title: "Storage decline from overdraft",
+      inputs: [
+        { label: "Specific yield Sy", value: "0.15" },
+        { label: "Annual deficit", value: "20", units: "mm/yr" },
+        { label: "Aquifer area", value: "100", units: "km²" },
+      ],
+      outputs: [
+        { label: "Volume lost / yr", value: "2.0", units: "Mm³" },
+        { label: "Head decline / yr", value: "133", units: "mm" },
+      ],
+    },
+  ],
+
+  "unit-hydrograph": [
+    {
+      title: "SCS dimensionless UH peak",
+      description: "Peak discharge for a 50 km² basin [1].",
+      inputs: [
+        { label: "Area A", value: "50", units: "km²" },
+        { label: "Time-to-peak T_p", value: "3.5", units: "h" },
+      ],
+      outputs: [
+        { label: "q_p (metric, 0.208 A/T_p)", value: "2.97", units: "m³/s per mm" },
+        { label: "Base time t_b ≈ 2.67 T_p", value: "9.35", units: "h" },
+      ],
+    },
+    {
+      title: "Convolution of 3-pulse hyetograph",
+      inputs: [
+        { label: "Effective rainfall pulses", value: "10, 25, 8", units: "mm" },
+        { label: "UH ordinates (Δt = 1 h)", value: "0, 2, 5, 3, 1", units: "m³/s per mm" },
+      ],
+      outputs: [
+        { label: "Peak Q", value: "180", units: "m³/s" },
+        { label: "Peak time", value: "3", units: "h after start" },
+      ],
+    },
+  ],
+};
+
+export const getTheory = (slug: string | undefined): ModuleTheory | null => {
+  if (!slug) return null;
+  const base = MODULE_THEORY[slug];
+  if (!base) return null;
+  return base.examples ? base : { ...base, examples: MODULE_EXAMPLES[slug] };
+};
+
