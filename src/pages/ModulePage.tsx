@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import TheoryPanel from "@/components/TheoryPanel";
 
 const moduleComponents: Record<string, React.LazyExoticComponent<React.ComponentType<{ onClose: () => void }>>> = {
   "cn-calculator": lazy(() => import("@/components/CNCalculator")),
@@ -76,6 +77,9 @@ const ModulePage = () => {
       <div className="pt-16">
         <Suspense fallback={<LoadingFallback />}>
           <ModuleComponent onClose={handleClose} />
+          {moduleId && moduleId !== "documentation" && moduleId !== "calculator-hub" && (
+            <TheoryPanel slug={moduleId} />
+          )}
         </Suspense>
       </div>
     </div>
