@@ -28,7 +28,9 @@ export interface TheoryExampleField {
   label: string;
   value: string;
   units?: string;
+  note?: string;
 }
+
 
 export interface TheoryExample {
   title: string;
