@@ -19,9 +19,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header isCalculatorOpen={false} onOpenDocs={openDocs} />
-      <Hero />
-      <GettingStarted onOpenModule={openModule} />
-      <ModulesSection onOpenModule={openModule} />
+      <main>
+        <Hero />
+        <GettingStarted onOpenModule={openModule} />
+        <ModulesSection onOpenModule={openModule} />
+      </main>
       <Footer />
     </div>
   );

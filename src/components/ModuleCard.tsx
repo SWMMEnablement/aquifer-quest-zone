@@ -1,6 +1,17 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type ModuleKind = "Calculator" | "Simulator" | "Visualization" | "Builder" | "Game";
+
+function inferKind(title: string): ModuleKind {
+  const t = title.toLowerCase();
+  if (t.includes("game") || t.includes("yield simulator")) return "Game";
+  if (t.includes("simulator")) return "Simulator";
+  if (t.includes("explorer") || t.includes("visualizer") || t.includes("lab") || t.includes("classifier") || t.includes("tracker") || t.includes("graph") || t.includes("companion")) return "Visualization";
+  if (t.includes("builder") || t.includes("wizard") || t.includes("designer")) return "Builder";
+  return "Calculator";
+}
+
 interface ModuleCardProps {
   title: string;
   description: string;
@@ -79,6 +90,19 @@ const ModuleCard = ({
       >
         <Icon className={cn("w-7 h-7", styles.icon)} />
       </div>
+
+      {/* Type tag */}
+      {isAvailable && (
+        <div className="mb-2">
+          <span className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide",
+            styles.bg,
+            styles.icon
+          )}>
+            {inferKind(title)}
+          </span>
+        </div>
+      )}
 
       {/* Content */}
       <h3 className="font-display text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
