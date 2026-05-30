@@ -152,10 +152,14 @@ const GettingStarted = ({ onOpenModule }: GettingStartedProps) => {
                   <path.icon className={`w-6 h-6 ${path.color}`} />
                 </div>
                 <CardTitle className="text-lg">{path.title}</CardTitle>
-                <CardDescription className="text-sm">
+                <p className={`text-xs font-medium ${path.color} mt-1`}>{path.audience}</p>
+                <CardDescription className="text-sm mt-2">
                   {path.description}
                 </CardDescription>
-                <Badge variant="secondary" className="w-fit mt-2">
+                <p className="text-xs text-muted-foreground mt-2 italic">
+                  Outcome: {path.outcome}
+                </p>
+                <Badge variant="secondary" className="w-fit mt-3">
                   {path.duration}
                 </Badge>
               </CardHeader>
