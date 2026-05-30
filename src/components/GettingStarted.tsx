@@ -91,10 +91,10 @@ const quickTips = [
 
 const GettingStarted = ({ onOpenModule }: GettingStartedProps) => {
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-muted/30">
+    <section id="getting-started" className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container px-6">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <Badge variant="outline" className="mb-4 border-water-light/30 text-water-light">
             <Droplets className="w-3 h-3 mr-1" />
             New to Hydrology Lab?
@@ -103,10 +103,24 @@ const GettingStarted = ({ onOpenModule }: GettingStartedProps) => {
             Getting Started
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Choose a learning path based on your background, or jump directly into any module. 
+            Pick a learning path that matches your background, or jump straight into any module.
             Each path builds progressively from foundational concepts to advanced applications.
           </p>
         </div>
+
+        {/* What's in each module */}
+        <div className="max-w-3xl mx-auto mb-12 p-5 rounded-xl bg-card border border-border">
+          <h3 className="font-display text-base font-semibold text-foreground mb-3">
+            What's in each module
+          </h3>
+          <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-water-light flex-shrink-0" /> Interactive calculator or simulator</li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-water-light flex-shrink-0" /> Pre-loaded example scenarios</li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-water-light flex-shrink-0" /> Theory: equations and assumptions</li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-water-light flex-shrink-0" /> Links back to Ponce's source pages</li>
+          </ul>
+        </div>
+
 
         {/* Quick Tips */}
         <div className="grid md:grid-cols-3 gap-4 mb-12">
