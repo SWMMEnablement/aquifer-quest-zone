@@ -391,7 +391,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">Water Balance</span>
                 <span className="text-xs text-muted-foreground">
-                  P = {rainfall[0]}"
+                  P = {toDisplay(rainfall[0])}{unitLabel()}
                 </span>
               </div>
               <div className="h-6 rounded-full overflow-hidden flex bg-muted">
