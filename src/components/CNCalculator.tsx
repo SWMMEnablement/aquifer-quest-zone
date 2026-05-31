@@ -201,9 +201,29 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Input Panel */}
           <Card className="p-6 shadow-card">
-            <h2 className="font-semibold text-lg mb-6 text-foreground">
-              Input Parameters
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-semibold text-lg text-foreground">
+                Input Parameters
+              </h2>
+              <div className="flex bg-muted rounded-lg p-0.5">
+                <Button
+                  variant={units === "imperial" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-xs px-2 py-1 h-7"
+                  onClick={() => setUnits("imperial")}
+                >
+                  in
+                </Button>
+                <Button
+                  variant={units === "metric" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-xs px-2 py-1 h-7"
+                  onClick={() => setUnits("metric")}
+                >
+                  mm
+                </Button>
+              </div>
+            </div>
 
             {/* Land Use */}
             <div className="mb-6">
