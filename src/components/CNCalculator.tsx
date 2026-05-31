@@ -280,10 +280,20 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
           {/* Results Panel */}
           <Card className="p-6 shadow-card">
-            <h2 className="font-semibold text-lg mb-6 text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Results
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-semibold text-lg text-foreground flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Results
+              </h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={downloadJSON}>
+                  <Download className="w-3.5 h-3.5 mr-1" /> JSON
+                </Button>
+                <Button variant="outline" size="sm" onClick={downloadCSV}>
+                  <Download className="w-3.5 h-3.5 mr-1" /> CSV
+                </Button>
+              </div>
+            </div>
 
             {/* Main results */}
             <div className="grid grid-cols-2 gap-4 mb-6">
