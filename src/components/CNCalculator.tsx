@@ -406,10 +406,10 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               </div>
               <div className="flex justify-between mt-2 text-sm">
                 <span className="text-primary font-medium">
-                  Runoff: {calculations.runoff}" ({calculations.runoffPercent}%)
+                  Runoff: {toDisplay(calculations.runoff)}{unitLabel()} ({calculations.runoffPercent}%)
                 </span>
                 <span className="text-earth-green font-medium">
-                  Infiltration: {calculations.infiltration}"
+                  Infiltration: {toDisplay(calculations.infiltration)}{unitLabel()}
                 </span>
               </div>
             </div>
