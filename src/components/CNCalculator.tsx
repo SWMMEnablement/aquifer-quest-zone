@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Info, AlertTriangle, TrendingUp, GitCompare } from "lucide-react";
+import { ArrowLeft, Info, AlertTriangle, TrendingUp, GitCompare, Download } from "lucide-react";
+import { getMergedTheory } from "@/lib/hydrology/theory-store";
 import CNMethodComparison from "./CNMethodComparison";
 import {
   LineChart,
@@ -57,6 +58,76 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
     () => computeRainfallRunoffCurve(landUse, soilType, amc, rainfall[0]),
     [landUse, soilType, amc, rainfall]
   );
+
+  const theory = getMergedTheory("cn-calculator");
+
+  const exportPayload = useMemo(() => ({
+    module: "CN Explorer — SCS Curve Number Method",
+    timestamp: new Date().toISOString(),
+    inputs: {
+      landUse: LAND_USE_LABELS[landUse],
+      soilType,
+      soilDescription: SOIL_DESCRIPTIONS[soilType],
+      amc: AMC_LABELS[amc],
+      rainfallDepth: rainfall[0],
+    },
+    results: calculations,
+    sensitivity: sensitivityData,
+    rainfallRunoffCurve: rainfallRunoffData,
+    references: theory?.references.map((r) => r.citation) ?? [],
+  }), [landUse, soilType, amc, rainfall, calculations, sensitivityData, rainfallRunoffData, theory]);
+
+  const downloadJSON = () => {
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cn-explorer-results-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = () => {
+    const rows: string[][] = [];
+    rows.push(["CN Explorer — SCS Curve Number Method"]);
+    rows.push(["Timestamp", exportPayload.timestamp]);
+    rows.push([]);
+    rows.push(["Inputs"]);
+    rows.push(["Land Use", exportPayload.inputs.landUse]);
+    rows.push(["Soil Group", exportPayload.inputs.soilType]);
+    rows.push(["Soil Description", exportPayload.inputs.soilDescription]);
+    rows.push(["AMC", exportPayload.inputs.amc]);
+    rows.push(["Rainfall Depth (in)", String(exportPayload.inputs.rainfallDepth)]);
+    rows.push([]);
+    rows.push(["Results"]);
+    rows.push(["Base CN", String(calculations.baseCN)]);
+    rows.push(["Adjusted CN", String(calculations.adjustedCN)]);
+    rows.push(["S (storage)", `${calculations.S}"`]);
+    rows.push(["Ia (initial abstraction)", `${calculations.Ia}"`]);
+    rows.push(["Runoff (in)", `${calculations.runoff}"`]);
+    rows.push(["Infiltration (in)", `${calculations.infiltration}"`]);
+    rows.push(["Runoff (%)", `${calculations.runoffPercent}%`]);
+    rows.push([]);
+    rows.push(["Sensitivity Analysis"]);
+    rows.push(["CN", "Runoff (in)", "Current"]);
+    sensitivityData.forEach((d) => rows.push([String(d.cn), String(d.runoff), d.isCurrent ? "Yes" : "No"]));
+    rows.push([]);
+    rows.push(["Rainfall–Runoff Curve"]);
+    rows.push(["Rainfall (in)", "Runoff (in)", "Selected"]);
+    rainfallRunoffData.forEach((d) => rows.push([String(d.rainfall), String(d.runoff), d.isSelected ? "Yes" : "No"]));
+    rows.push([]);
+    rows.push(["References"]);
+    (theory?.references.map((r) => r.citation) ?? []).forEach((c) => rows.push([c]));
+
+    const csv = rows.map((r) => r.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cn-explorer-results-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 md:px-6">
@@ -209,10 +280,20 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
           {/* Results Panel */}
           <Card className="p-6 shadow-card">
-            <h2 className="font-semibold text-lg mb-6 text-foreground flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Results
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-semibold text-lg text-foreground flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Results
+              </h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={downloadJSON}>
+                  <Download className="w-3.5 h-3.5 mr-1" /> JSON
+                </Button>
+                <Button variant="outline" size="sm" onClick={downloadCSV}>
+                  <Download className="w-3.5 h-3.5 mr-1" /> CSV
+                </Button>
+              </div>
+            </div>
 
             {/* Main results */}
             <div className="grid grid-cols-2 gap-4 mb-6">
