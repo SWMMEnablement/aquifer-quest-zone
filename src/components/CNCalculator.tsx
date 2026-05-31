@@ -288,19 +288,21 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
             {/* Rainfall */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-foreground mb-2">
-                Rainfall Depth: <span className="text-primary font-bold">{rainfall[0]}"</span>
+                Rainfall Depth: <span className="text-primary font-bold">{toDisplay(rainfall[0])}{unitLabel()}</span>
               </label>
               <Slider
-                value={rainfall}
-                onValueChange={setRainfall}
+                value={units === "metric" ? [Math.round(rainfall[0] * INCH_TO_MM)] : rainfall}
+                onValueChange={(v) =>
+                  setRainfall(units === "metric" ? [Math.round((v[0] / INCH_TO_MM) * 10) / 10] : v)
+                }
                 min={0}
-                max={10}
-                step={0.1}
+                max={units === "metric" ? 250 : 10}
+                step={units === "metric" ? 2.5 : 0.1}
                 className="mt-4"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0"</span>
-                <span>10"</span>
+                <span>0{unitLabel()}</span>
+                <span>{units === "metric" ? "250" : "10"}{unitLabel()}</span>
               </div>
             </div>
 
