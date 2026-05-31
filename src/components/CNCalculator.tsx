@@ -146,9 +146,11 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const downloadCSV = () => {
     const rows: string[][] = [];
     rows.push(["CN Explorer — SCS Curve Number Method"]);
+    rows.push(["Export Schema Version", exportPayload.exportSchemaVersion]);
     rows.push(["App Version", exportPayload.appVersion]);
     rows.push(["Timestamp", exportPayload.timestamp]);
     rows.push(["Units", exportPayload.units]);
+    rows.push(["Equation Notes", exportPayload.equationNotes]);
     rows.push([]);
     rows.push(["Inputs"]);
     rows.push(["Land Use", exportPayload.inputs.landUse]);
