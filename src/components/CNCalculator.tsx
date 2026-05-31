@@ -44,6 +44,13 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const [rainfall, setRainfall] = useState([4]);
   const [showLimitations, setShowLimitations] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [units, setUnits] = useState<"imperial" | "metric">("imperial");
+
+  const INCH_TO_MM = 25.4;
+  const toDisplay = (inches: number) =>
+    units === "metric" ? Math.round(inches * INCH_TO_MM * 10) / 10 : inches;
+  const unitLabel = () => (units === "metric" ? "mm" : '"');
+  const unitLabelLong = () => (units === "metric" ? "mm" : "in");
 
   const calculations = useMemo(
     () => computeCNResults(landUse, soilType, amc, rainfall[0]),
