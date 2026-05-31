@@ -556,10 +556,12 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               <p className="text-sm text-foreground">
                 <span className="font-semibold">Key Insight:</span> A change of just ±5 in CN can result in{" "}
                 <span className="text-primary font-bold">
-                  {Math.abs(
-                    (sensitivityData.find((d) => d.isCurrent)?.runoff || 0) -
-                      (sensitivityData[Math.floor(sensitivityData.length / 2) + 2]?.runoff || 0)
-                  ).toFixed(2)}"
+                  {toDisplay(
+                    Math.abs(
+                      (sensitivityData.find((d) => d.isCurrent)?.runoff || 0) -
+                        (sensitivityData[Math.floor(sensitivityData.length / 2) + 2]?.runoff || 0)
+                    )
+                  ).toFixed(2)}{unitLabel()}
                 </span>{" "}
                 difference in runoff depth.
               </p>
