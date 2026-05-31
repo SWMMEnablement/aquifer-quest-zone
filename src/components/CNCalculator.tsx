@@ -496,7 +496,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sensitivityData}>
+                <LineChart data={displaySensitivityData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis
                     dataKey="cn"
@@ -507,7 +507,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                   <YAxis
                     tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
-                    label={{ value: 'Runoff (in)', angle: -90, position: 'insideLeft', fontSize: 10 }}
+                    label={{ value: `Runoff (${unitLabelLong()})`, angle: -90, position: 'insideLeft', fontSize: 10 }}
                   />
                   <Tooltip
                     contentStyle={{
