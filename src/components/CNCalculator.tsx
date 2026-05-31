@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Info, AlertTriangle, TrendingUp, GitCompare, Download, Ruler } from "lucide-react";
+import { ArrowLeft, Info, AlertTriangle, TrendingUp, GitCompare, Download } from "lucide-react";
 import { getMergedTheory } from "@/lib/hydrology/theory-store";
 import CNMethodComparison from "./CNMethodComparison";
 import {
