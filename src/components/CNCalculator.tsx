@@ -31,6 +31,7 @@ import {
   computeSensitivityData,
   computeRainfallRunoffCurve,
 } from "@/lib/hydrology/cn-method";
+import packageJson from "../../package.json";
 
 interface CNCalculatorProps {
   onClose: () => void;
@@ -43,6 +44,13 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const [rainfall, setRainfall] = useState([4]);
   const [showLimitations, setShowLimitations] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [units, setUnits] = useState<"imperial" | "metric">("imperial");
+
+  const INCH_TO_MM = 25.4;
+  const toDisplay = (inches: number) =>
+    units === "metric" ? Math.round(inches * INCH_TO_MM * 10) / 10 : inches;
+  const unitLabel = () => (units === "metric" ? "mm" : '"');
+  const unitLabelLong = () => (units === "metric" ? "mm" : "in");
 
   const calculations = useMemo(
     () => computeCNResults(landUse, soilType, amc, rainfall[0]),
@@ -61,21 +69,63 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
   const theory = getMergedTheory("cn-calculator");
 
-  const exportPayload = useMemo(() => ({
-    module: "CN Explorer — SCS Curve Number Method",
-    timestamp: new Date().toISOString(),
-    inputs: {
-      landUse: LAND_USE_LABELS[landUse],
+  const displaySensitivityData = useMemo(
+    () =>
+      sensitivityData.map((d) => ({
+        ...d,
+        runoff: toDisplay(d.runoff),
+      })),
+    [sensitivityData, units]
+  );
+
+  const displayRainfallRunoffData = useMemo(
+    () =>
+      rainfallRunoffData.map((d) => ({
+        ...d,
+        rainfall: toDisplay(d.rainfall),
+        runoff: toDisplay(d.runoff),
+      })),
+    [rainfallRunoffData, units]
+  );
+
+  const exportPayload = useMemo(
+    () => ({
+      module: "CN Explorer — SCS Curve Number Method",
+      appVersion: packageJson.version,
+      timestamp: new Date().toISOString(),
+      units: unitLabelLong(),
+      inputs: {
+        landUse: LAND_USE_LABELS[landUse],
+        soilType,
+        soilDescription: SOIL_DESCRIPTIONS[soilType],
+        amc: AMC_LABELS[amc],
+        rainfallDepth: toDisplay(rainfall[0]),
+      },
+      results: {
+        baseCN: calculations.baseCN,
+        adjustedCN: calculations.adjustedCN,
+        S: toDisplay(calculations.S),
+        Ia: toDisplay(calculations.Ia),
+        runoff: toDisplay(calculations.runoff),
+        infiltration: toDisplay(calculations.infiltration),
+        runoffPercent: calculations.runoffPercent,
+      },
+      sensitivity: displaySensitivityData,
+      rainfallRunoffCurve: displayRainfallRunoffData,
+      references: theory?.references.map((r) => r.citation) ?? [],
+    }),
+    [
+      landUse,
       soilType,
-      soilDescription: SOIL_DESCRIPTIONS[soilType],
-      amc: AMC_LABELS[amc],
-      rainfallDepth: rainfall[0],
-    },
-    results: calculations,
-    sensitivity: sensitivityData,
-    rainfallRunoffCurve: rainfallRunoffData,
-    references: theory?.references.map((r) => r.citation) ?? [],
-  }), [landUse, soilType, amc, rainfall, calculations, sensitivityData, rainfallRunoffData, theory]);
+      amc,
+      rainfall,
+      units,
+      calculations,
+      displaySensitivityData,
+      displayRainfallRunoffData,
+      theory,
+    ]
+  );
 
   const downloadJSON = () => {
     const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
@@ -90,31 +140,33 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
   const downloadCSV = () => {
     const rows: string[][] = [];
     rows.push(["CN Explorer — SCS Curve Number Method"]);
+    rows.push(["App Version", exportPayload.appVersion]);
     rows.push(["Timestamp", exportPayload.timestamp]);
+    rows.push(["Units", exportPayload.units]);
     rows.push([]);
     rows.push(["Inputs"]);
     rows.push(["Land Use", exportPayload.inputs.landUse]);
     rows.push(["Soil Group", exportPayload.inputs.soilType]);
     rows.push(["Soil Description", exportPayload.inputs.soilDescription]);
     rows.push(["AMC", exportPayload.inputs.amc]);
-    rows.push(["Rainfall Depth (in)", String(exportPayload.inputs.rainfallDepth)]);
+    rows.push([`Rainfall Depth (${unitLabelLong()})`, String(exportPayload.inputs.rainfallDepth)]);
     rows.push([]);
     rows.push(["Results"]);
     rows.push(["Base CN", String(calculations.baseCN)]);
     rows.push(["Adjusted CN", String(calculations.adjustedCN)]);
-    rows.push(["S (storage)", `${calculations.S}"`]);
-    rows.push(["Ia (initial abstraction)", `${calculations.Ia}"`]);
-    rows.push(["Runoff (in)", `${calculations.runoff}"`]);
-    rows.push(["Infiltration (in)", `${calculations.infiltration}"`]);
+    rows.push([`S (storage) (${unitLabelLong()})`, `${toDisplay(calculations.S)}${unitLabel()}`]);
+    rows.push([`Ia (initial abstraction) (${unitLabelLong()})`, `${toDisplay(calculations.Ia)}${unitLabel()}`]);
+    rows.push([`Runoff (${unitLabelLong()})`, `${toDisplay(calculations.runoff)}${unitLabel()}`]);
+    rows.push([`Infiltration (${unitLabelLong()})`, `${toDisplay(calculations.infiltration)}${unitLabel()}`]);
     rows.push(["Runoff (%)", `${calculations.runoffPercent}%`]);
     rows.push([]);
     rows.push(["Sensitivity Analysis"]);
-    rows.push(["CN", "Runoff (in)", "Current"]);
-    sensitivityData.forEach((d) => rows.push([String(d.cn), String(d.runoff), d.isCurrent ? "Yes" : "No"]));
+    rows.push(["CN", `Runoff (${unitLabelLong()})`, "Current"]);
+    displaySensitivityData.forEach((d) => rows.push([String(d.cn), String(d.runoff), d.isCurrent ? "Yes" : "No"]));
     rows.push([]);
     rows.push(["Rainfall–Runoff Curve"]);
-    rows.push(["Rainfall (in)", "Runoff (in)", "Selected"]);
-    rainfallRunoffData.forEach((d) => rows.push([String(d.rainfall), String(d.runoff), d.isSelected ? "Yes" : "No"]));
+    rows.push([`Rainfall (${unitLabelLong()})`, `Runoff (${unitLabelLong()})`, "Selected"]);
+    displayRainfallRunoffData.forEach((d) => rows.push([String(d.rainfall), String(d.runoff), d.isSelected ? "Yes" : "No"]));
     rows.push([]);
     rows.push(["References"]);
     (theory?.references.map((r) => r.citation) ?? []).forEach((c) => rows.push([c]));
@@ -150,9 +202,29 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Input Panel */}
           <Card className="p-6 shadow-card">
-            <h2 className="font-semibold text-lg mb-6 text-foreground">
-              Input Parameters
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-semibold text-lg text-foreground">
+                Input Parameters
+              </h2>
+              <div className="flex bg-muted rounded-lg p-0.5">
+                <Button
+                  variant={units === "imperial" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-xs px-2 py-1 h-7"
+                  onClick={() => setUnits("imperial")}
+                >
+                  in
+                </Button>
+                <Button
+                  variant={units === "metric" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-xs px-2 py-1 h-7"
+                  onClick={() => setUnits("metric")}
+                >
+                  mm
+                </Button>
+              </div>
+            </div>
 
             {/* Land Use */}
             <div className="mb-6">
@@ -217,19 +289,21 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
             {/* Rainfall */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-foreground mb-2">
-                Rainfall Depth: <span className="text-primary font-bold">{rainfall[0]}"</span>
+                Rainfall Depth: <span className="text-primary font-bold">{toDisplay(rainfall[0])}{unitLabel()}</span>
               </label>
               <Slider
-                value={rainfall}
-                onValueChange={setRainfall}
+                value={units === "metric" ? [Math.round(rainfall[0] * INCH_TO_MM)] : rainfall}
+                onValueChange={(v) =>
+                  setRainfall(units === "metric" ? [Math.round((v[0] / INCH_TO_MM) * 10) / 10] : v)
+                }
                 min={0}
-                max={10}
-                step={0.1}
+                max={units === "metric" ? 250 : 10}
+                step={units === "metric" ? 2.5 : 0.1}
                 className="mt-4"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0"</span>
-                <span>10"</span>
+                <span>0{unitLabel()}</span>
+                <span>{units === "metric" ? "250" : "10"}{unitLabel()}</span>
               </div>
             </div>
 
@@ -318,7 +392,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">Water Balance</span>
                 <span className="text-xs text-muted-foreground">
-                  P = {rainfall[0]}"
+                  P = {toDisplay(rainfall[0])}{unitLabel()}
                 </span>
               </div>
               <div className="h-6 rounded-full overflow-hidden flex bg-muted">
@@ -333,10 +407,10 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               </div>
               <div className="flex justify-between mt-2 text-sm">
                 <span className="text-primary font-medium">
-                  Runoff: {calculations.runoff}" ({calculations.runoffPercent}%)
+                  Runoff: {toDisplay(calculations.runoff)}{unitLabel()} ({calculations.runoffPercent}%)
                 </span>
                 <span className="text-earth-green font-medium">
-                  Infiltration: {calculations.infiltration}"
+                  Infiltration: {toDisplay(calculations.infiltration)}{unitLabel()}
                 </span>
               </div>
             </div>
@@ -353,13 +427,13 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                 <div>
                   <span className="text-muted-foreground">S (Storage):</span>
                   <span className="ml-2 font-medium text-foreground">
-                    {calculations.S}"
+                    {toDisplay(calculations.S)}{unitLabel()}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Ia (Initial Abs):</span>
                   <span className="ml-2 font-medium text-foreground">
-                    {calculations.Ia}"
+                    {toDisplay(calculations.Ia)}{unitLabel()}
                   </span>
                 </div>
               </div>
@@ -372,7 +446,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               </h3>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={rainfallRunoffData}>
+                  <AreaChart data={displayRainfallRunoffData}>
                     <defs>
                       <linearGradient id="runoffGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(205 85% 35%)" stopOpacity={0.4} />
@@ -384,12 +458,12 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                       dataKey="rainfall"
                       tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
-                      label={{ value: 'Rainfall (in)', position: 'bottom', offset: -5, fontSize: 10 }}
+                      label={{ value: `Rainfall (${unitLabelLong()})`, position: 'bottom', offset: -5, fontSize: 10 }}
                     />
                     <YAxis
                       tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
-                      label={{ value: 'Runoff (in)', angle: -90, position: 'insideLeft', fontSize: 10 }}
+                      label={{ value: `Runoff (${unitLabelLong()})`, angle: -90, position: 'insideLeft', fontSize: 10 }}
                     />
                     <Tooltip
                       contentStyle={{
@@ -423,7 +497,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sensitivityData}>
+                <LineChart data={displaySensitivityData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis
                     dataKey="cn"
@@ -434,7 +508,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                   <YAxis
                     tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
-                    label={{ value: 'Runoff (in)', angle: -90, position: 'insideLeft', fontSize: 10 }}
+                    label={{ value: `Runoff (${unitLabelLong()})`, angle: -90, position: 'insideLeft', fontSize: 10 }}
                   />
                   <Tooltip
                     contentStyle={{
@@ -482,10 +556,12 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               <p className="text-sm text-foreground">
                 <span className="font-semibold">Key Insight:</span> A change of just ±5 in CN can result in{" "}
                 <span className="text-primary font-bold">
-                  {Math.abs(
-                    (sensitivityData.find((d) => d.isCurrent)?.runoff || 0) -
-                      (sensitivityData[Math.floor(sensitivityData.length / 2) + 2]?.runoff || 0)
-                  ).toFixed(2)}"
+                  {toDisplay(
+                    Math.abs(
+                      (sensitivityData.find((d) => d.isCurrent)?.runoff || 0) -
+                        (sensitivityData[Math.floor(sensitivityData.length / 2) + 2]?.runoff || 0)
+                    )
+                  ).toFixed(2)}{unitLabel()}
                 </span>{" "}
                 difference in runoff depth.
               </p>
