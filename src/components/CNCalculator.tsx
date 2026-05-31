@@ -75,7 +75,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
         ...d,
         runoff: toDisplay(d.runoff),
       })),
-    [sensitivityData]
+    [sensitivityData, units]
   );
 
   const displayRainfallRunoffData = useMemo(
@@ -85,7 +85,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
         rainfall: toDisplay(d.rainfall),
         runoff: toDisplay(d.runoff),
       })),
-    [rainfallRunoffData]
+    [rainfallRunoffData, units]
   );
 
   const exportPayload = useMemo(
