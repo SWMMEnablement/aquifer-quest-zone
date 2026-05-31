@@ -119,6 +119,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
       soilType,
       amc,
       rainfall,
+      units,
       calculations,
       displaySensitivityData,
       displayRainfallRunoffData,
