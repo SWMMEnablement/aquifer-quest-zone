@@ -69,21 +69,62 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
 
   const theory = getMergedTheory("cn-calculator");
 
-  const exportPayload = useMemo(() => ({
-    module: "CN Explorer — SCS Curve Number Method",
-    timestamp: new Date().toISOString(),
-    inputs: {
-      landUse: LAND_USE_LABELS[landUse],
+  const displaySensitivityData = useMemo(
+    () =>
+      sensitivityData.map((d) => ({
+        ...d,
+        runoff: toDisplay(d.runoff),
+      })),
+    [sensitivityData]
+  );
+
+  const displayRainfallRunoffData = useMemo(
+    () =>
+      rainfallRunoffData.map((d) => ({
+        ...d,
+        rainfall: toDisplay(d.rainfall),
+        runoff: toDisplay(d.runoff),
+      })),
+    [rainfallRunoffData]
+  );
+
+  const exportPayload = useMemo(
+    () => ({
+      module: "CN Explorer — SCS Curve Number Method",
+      appVersion: packageJson.version,
+      timestamp: new Date().toISOString(),
+      units: unitLabelLong(),
+      inputs: {
+        landUse: LAND_USE_LABELS[landUse],
+        soilType,
+        soilDescription: SOIL_DESCRIPTIONS[soilType],
+        amc: AMC_LABELS[amc],
+        rainfallDepth: toDisplay(rainfall[0]),
+      },
+      results: {
+        baseCN: calculations.baseCN,
+        adjustedCN: calculations.adjustedCN,
+        S: toDisplay(calculations.S),
+        Ia: toDisplay(calculations.Ia),
+        runoff: toDisplay(calculations.runoff),
+        infiltration: toDisplay(calculations.infiltration),
+        runoffPercent: calculations.runoffPercent,
+      },
+      sensitivity: displaySensitivityData,
+      rainfallRunoffCurve: displayRainfallRunoffData,
+      references: theory?.references.map((r) => r.citation) ?? [],
+    }),
+    [
+      landUse,
       soilType,
-      soilDescription: SOIL_DESCRIPTIONS[soilType],
-      amc: AMC_LABELS[amc],
-      rainfallDepth: rainfall[0],
-    },
-    results: calculations,
-    sensitivity: sensitivityData,
-    rainfallRunoffCurve: rainfallRunoffData,
-    references: theory?.references.map((r) => r.citation) ?? [],
-  }), [landUse, soilType, amc, rainfall, calculations, sensitivityData, rainfallRunoffData, theory]);
+      amc,
+      rainfall,
+      calculations,
+      displaySensitivityData,
+      displayRainfallRunoffData,
+      theory,
+    ]
+  );
 
   const downloadJSON = () => {
     const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
