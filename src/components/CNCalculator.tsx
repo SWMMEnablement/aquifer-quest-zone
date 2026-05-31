@@ -445,7 +445,7 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
               </h3>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={rainfallRunoffData}>
+                  <AreaChart data={displayRainfallRunoffData}>
                     <defs>
                       <linearGradient id="runoffGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(205 85% 35%)" stopOpacity={0.4} />
@@ -457,12 +457,12 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                       dataKey="rainfall"
                       tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
-                      label={{ value: 'Rainfall (in)', position: 'bottom', offset: -5, fontSize: 10 }}
+                      label={{ value: `Rainfall (${unitLabelLong()})`, position: 'bottom', offset: -5, fontSize: 10 }}
                     />
                     <YAxis
                       tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={{ stroke: 'hsl(var(--border))' }}
-                      label={{ value: 'Runoff (in)', angle: -90, position: 'insideLeft', fontSize: 10 }}
+                      label={{ value: `Runoff (${unitLabelLong()})`, angle: -90, position: 'insideLeft', fontSize: 10 }}
                     />
                     <Tooltip
                       contentStyle={{
