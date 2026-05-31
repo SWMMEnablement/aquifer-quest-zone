@@ -426,13 +426,13 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
                 <div>
                   <span className="text-muted-foreground">S (Storage):</span>
                   <span className="ml-2 font-medium text-foreground">
-                    {calculations.S}"
+                    {toDisplay(calculations.S)}{unitLabel()}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Ia (Initial Abs):</span>
                   <span className="ml-2 font-medium text-foreground">
-                    {calculations.Ia}"
+                    {toDisplay(calculations.Ia)}{unitLabel()}
                   </span>
                 </div>
               </div>
