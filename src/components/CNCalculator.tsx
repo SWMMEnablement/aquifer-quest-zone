@@ -88,12 +88,18 @@ const CNCalculator = ({ onClose }: CNCalculatorProps) => {
     [rainfallRunoffData, units]
   );
 
+  const exportSchemaVersion = "1.0";
+  const equationNotes =
+    "SCS Curve Number method: Ia = 0.2S, S = (1000/CN) - 10. AMC adjustments per NEH-4 Chapter 9. Runoff Q = (P - Ia)^2 / (P - Ia + S) for P > Ia.";
+
   const exportPayload = useMemo(
     () => ({
       module: "CN Explorer — SCS Curve Number Method",
+      exportSchemaVersion,
       appVersion: packageJson.version,
       timestamp: new Date().toISOString(),
       units: unitLabelLong(),
+      equationNotes,
       inputs: {
         landUse: LAND_USE_LABELS[landUse],
         soilType,
